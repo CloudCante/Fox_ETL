@@ -9,6 +9,7 @@ import os
 from psycopg2.extras import execute_values
 
 def connect_to_db():
+    print("🔌 Attempting to connect to database...")
     return psycopg2.connect(
         host="localhost",
         database="fox_db",
@@ -18,6 +19,7 @@ def connect_to_db():
     )
 
 def create_testboard_table(conn):
+    print("📝 Creating/verifying testboard table...")
     cursor = conn.cursor()
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS testboard_master_log (
@@ -81,18 +83,58 @@ def convert_empty_string(value):
     return value
 
 def main():
-    print("🚀 Uploading testboard data to testboard_master_log...")
-    conn = connect_to_db()
+    print("🚀 Starting testboard data upload process...")
+    
+    try:
+        conn = connect_to_db()
+        print("✅ Database connection successful")
+    except Exception as e:
+        print(f"❌ Database connection failed: {e}")
+        return
+        
     create_testboard_table(conn)
-    testboard_files = glob.glob("/home/cloud/projects/pros/data log/testboardrecord_xlsx/**/*.xlsx", recursive=True)
+    
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    print(f"📂 Script directory: {script_dir}")
+    
+    # Build path to Excel files relative to script location
+    excel_path = os.path.join(script_dir, "input", "data log", "testboardrecord_xlsx", "**", "*.xlsx")
+    print(f"🔍 Looking for Excel files in: {excel_path}")
+    
+    # Use glob with normalized path
+    excel_path_normalized = os.path.normpath(excel_path)
+    print(f"🔍 Normalized path: {excel_path_normalized}")
+    
+    testboard_files = glob.glob(excel_path_normalized, recursive=True)
+    print(f"📊 Found {len(testboard_files)} Excel files")
+    
+    if not testboard_files:
+        print("\n❌ No Excel files found! Checking directory existence:")
+        check_path = os.path.join(script_dir, "input", "data log", "testboardrecord_xlsx")
+        if os.path.exists(check_path):
+            print(f"✅ Directory exists: {check_path}")
+            print("📂 Contents:")
+            for root, dirs, files in os.walk(check_path):
+                print(f"\nDirectory: {root}")
+                if dirs:
+                    print("Subdirectories:", dirs)
+                if files:
+                    print("Files:", files)
+        else:
+            print(f"❌ Directory does not exist: {check_path}")
+        return
+        
     total_imported = 0
     
     for i, file_path in enumerate(testboard_files, 1):
-        print(f"Processing file {i}/{len(testboard_files)}: {os.path.basename(file_path)}")
+        print(f"\nProcessing file {i}/{len(testboard_files)}: {os.path.basename(file_path)}")
         
         try:
             # Read Excel file
+            print(f"📖 Reading file: {file_path}")
             df = pd.read_excel(file_path)
+            print(f"✅ Successfully read file with {len(df)} rows")
             
             # Clean column names
             df.columns = [clean_column_name(col) for col in df.columns]

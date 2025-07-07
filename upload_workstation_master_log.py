@@ -83,7 +83,18 @@ def main():
     print("🚀 Uploading workstation data to workstation_master_log...")
     conn = connect_to_db()
     create_workstation_table(conn)
-    workstation_files = glob.glob("/home/cloud/projects/pros/data log/workstationreport_xlsx/**/*.xlsx", recursive=True)
+    
+    # Get the directory of the current script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Build path to Excel files relative to script location
+    excel_path = os.path.join(script_dir, "input", "data log", "workstationreport_xlsx", "**", "*.xlsx")
+    # Use glob with normalized path
+    workstation_files = glob.glob(os.path.normpath(excel_path), recursive=True)
+    
+    if not workstation_files:
+        print("⚠️ No Excel files found in:", os.path.dirname(excel_path))
+        return
+        
     total_imported = 0
     
     for i, file_path in enumerate(workstation_files, 1):
