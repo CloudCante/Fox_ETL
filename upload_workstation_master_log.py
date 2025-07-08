@@ -84,11 +84,8 @@ def main():
     conn = connect_to_db()
     create_workstation_table(conn)
     
-    # Get the directory of the current script
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    # Build path to Excel files relative to script location
     excel_path = os.path.join(script_dir, "input", "data log", "workstationreport_xlsx", "**", "*.xlsx")
-    # Use glob with normalized path
     workstation_files = glob.glob(os.path.normpath(excel_path), recursive=True)
     
     if not workstation_files:
