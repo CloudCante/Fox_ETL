@@ -23,7 +23,7 @@ def setup_driver():
 def monitor_and_move_file(filename):
     # Linux paths
     downloads_path = "/home/darvin/Downloads"
-    target_path = "/home/darvin/Fox-ETL/input"
+    target_path = "/home/darvin/Fox_ETL/input"
 
     source_file = os.path.join(downloads_path, filename)
     target_file = os.path.join(target_path, filename)
