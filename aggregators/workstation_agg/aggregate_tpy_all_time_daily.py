@@ -206,7 +206,7 @@ def aggregate_daily_tpy_for_date(target_date):
                 
                 # Upsert daily TPY metrics with week metadata
                 cur.execute("""
-                    INSERT INTO daily_tpy_metrics_historical 
+                    INSERT INTO daily_tpy_metrics 
                         (date_id, model, workstation_name, total_parts, passed_parts, failed_parts, throughput_yield,
                          week_id, week_start, week_end, total_starters)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -305,14 +305,14 @@ def aggregate_daily_tpy_metrics_all_time():
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) FROM daily_tpy_metrics_historical")
+            cur.execute("SELECT COUNT(*) FROM daily_tpy_metrics")
             total_records = cur.fetchone()[0]
-            print(f"  📊 Total records in daily_tpy_metrics_historical: {total_records}")
+            print(f"  📊 Total records in daily_tpy_metrics: {total_records}")
             
             if total_records > 0:
                 cur.execute("""
                     SELECT date_id, model, workstation_name, throughput_yield 
-                    FROM daily_tpy_metrics_historical 
+                    FROM daily_tpy_metrics 
                     ORDER BY date_id DESC, throughput_yield DESC 
                     LIMIT 5;
                 """)

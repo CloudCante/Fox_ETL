@@ -304,7 +304,7 @@ def aggregate_weekly_tpy_for_week(week_id):
                 SELECT 
                     SUM(total_parts) as total_parts,
                     SUM(passed_parts) as passed_parts
-                FROM daily_tpy_metrics_historical 
+                FROM daily_tpy_metrics 
                 WHERE date_id >= %s AND date_id <= %s
             """, (week_start, week_end))
             
@@ -326,7 +326,7 @@ def aggregate_weekly_tpy_for_week(week_id):
             
             # 6. Insert weekly TPY metrics
             cur.execute("""
-                INSERT INTO weekly_tpy_metrics_historical (
+                INSERT INTO weekly_tpy_metrics (
                     week_id, week_start, week_end, days_in_week,
                     weekly_first_pass_yield_traditional_parts_started,
                     weekly_first_pass_yield_traditional_first_pass_success,
@@ -458,7 +458,7 @@ def get_all_available_weeks():
                 FROM (
                     SELECT 
                         CONCAT(EXTRACT(YEAR FROM date_id), '-W', LPAD(EXTRACT(WEEK FROM date_id)::text, 2, '0')) as week_id
-                    FROM daily_tpy_metrics_historical
+                    FROM daily_tpy_metrics
                 ) weeks
                 ORDER BY week_id;
             """)
@@ -506,15 +506,15 @@ def aggregate_weekly_tpy_metrics_all_time():
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) FROM weekly_tpy_metrics_historical")
+            cur.execute("SELECT COUNT(*) FROM weekly_tpy_metrics")
             total_records = cur.fetchone()[0]
-            print(f"  📊 Total records in weekly_tpy_metrics_historical: {total_records}")
+            print(f"  📊 Total records in weekly_tpy_metrics: {total_records}")
             
             if total_records > 0:
                 cur.execute("""
                     SELECT week_id, weekly_tpy_hardcoded_sxm4_tpy, weekly_tpy_hardcoded_sxm5_tpy,
                            weekly_tpy_dynamic_sxm4_tpy, weekly_tpy_dynamic_sxm5_tpy
-                    FROM weekly_tpy_metrics_historical 
+                    FROM weekly_tpy_metrics 
                     ORDER BY week_id DESC 
                     LIMIT 3;
                 """)
