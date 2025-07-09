@@ -45,7 +45,7 @@ def main():
                 'customer_pn': str(row.get('customer_pn', '')).strip() or None,
                 'outbound_version': str(row.get('outbound_version', '')),
                 'workstation_name': str(row.get('workstation_name', '')),
-                'history_station_start_time': pd.to_datetime(row.get('history_station_start_time')).to_pydatetime() if pd.notna(row.get('history_station_start_time')) else None,
+                'history_station_start_time': pd.to_datetime(row.get('history_station_end_time')).to_pydatetime() if pd.isna(row.get('history_station_start_time')) else pd.to_datetime(row.get('history_station_start_time')).to_pydatetime() if pd.notna(row.get('history_station_start_time')) else None,
                 'history_station_end_time': pd.to_datetime(row.get('history_station_end_time')).to_pydatetime() if pd.notna(row.get('history_station_end_time')) else None,
                 'hours': str(row.get('hours', '')),
                 'service_flow': str(row.get('service_flow', '')),
