@@ -39,6 +39,19 @@ def monitor_and_move_file(filename):
         logger.error(f"Error moving file from {source_file} to {target_file}: {e}")
         return False
 
+def wait_for_download(filename, timeout=60):
+    downloads_path = "/home/darvin/Downloads"
+    file_path = os.path.join(downloads_path, filename)
+    start_time = time.time()
+    
+    while time.time() - start_time < timeout:
+        if os.path.exists(file_path):
+            # Wait a bit more to ensure file is fully written
+            time.sleep(2)
+            return True
+        time.sleep(1)
+    return False
+
 def main():
     driver = setup_driver()
     if driver:
@@ -71,10 +84,16 @@ def main():
                     )
                     confirm_button1.click()
                     logger.info("Clicked confirm on Tab 1 (workstation report)")
+                    
+                    # Wait for workstation download to complete
+                    if wait_for_download(workstation_filename):
+                        logger.info("Workstation file download completed")
+                        monitor_and_move_file(workstation_filename)
+                    else:
+                        logger.error("Workstation file download timed out")
+                        
                 except Exception as e:
                     logger.error(f"Could not click confirm button on Tab 1: {e}")
-                time.sleep(5)
-                monitor_and_move_file(workstation_filename)
 
                 # --- Tab 2: Test board record report.xls ---
                 driver.switch_to.window(tab2)
@@ -84,10 +103,16 @@ def main():
                     )
                     confirm_button2.click()
                     logger.info("Clicked confirm on Tab 2 (test board report)")
+                    
+                    # Wait for testboard download to complete
+                    if wait_for_download(testboard_filename):
+                        logger.info("Testboard file download completed")
+                        monitor_and_move_file(testboard_filename)
+                    else:
+                        logger.error("Testboard file download timed out")
+                        
                 except Exception as e:
                     logger.error(f"Could not click confirm button on Tab 2: {e}")
-                time.sleep(5)
-                monitor_and_move_file(testboard_filename)
 
                 # Switch back to Tab 1 and wait before next cycle
                 driver.switch_to.window(tab1)
