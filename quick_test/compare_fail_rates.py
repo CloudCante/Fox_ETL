@@ -16,22 +16,13 @@ def connect_to_db():
 
 def main():
     print("\n--- Cosmetic Damage Serial Analysis ---\n")
-    # 1. Read serials from Excel
+    # 1. Read serials from Excel (no header, single column)
     try:
-        df_excel = pd.read_excel(EXCEL_FILE)
+        df_excel = pd.read_excel(EXCEL_FILE, header=None)
     except Exception as e:
         print(f"❌ Failed to read Excel file: {e}")
         return
-    # Try to find the serial column
-    serial_col = None
-    for col in df_excel.columns:
-        if col.strip().lower() in ["sn", "serial", "serial_number", "serialnumber"]:
-            serial_col = col
-            break
-    if not serial_col:
-        print(f"❌ Could not find serial number column in Excel. Columns: {list(df_excel.columns)}")
-        return
-    serials = df_excel[serial_col].astype(str).str.strip().unique().tolist()
+    serials = df_excel.iloc[:, 0].astype(str).str.strip().unique().tolist()
     print(f"Found {len(serials)} unique serials in Excel file.")
 
     # 2. Connect to DB
