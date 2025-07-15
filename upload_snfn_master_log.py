@@ -44,7 +44,7 @@ def create_snfn_table(conn):
         cursor.execute("""
         ALTER TABLE snfn_master_log 
         ADD CONSTRAINT snfn_unique_constraint 
-        UNIQUE (workstation_name, fixture_no, error_code, error_disc, sn, pn, history_station_start_time, history_station_end_time, data_source);
+        UNIQUE (workstation_name, fixture_no, error_code, error_disc, sn, pn, history_station_start_time, history_station_end_time);
         """)
     except Exception as e:
         # Constraint might already exist
