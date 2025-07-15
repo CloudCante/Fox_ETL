@@ -33,7 +33,7 @@ def create_snfn_table(conn):
         pn VARCHAR(255),
         history_station_start_time TIMESTAMP NOT NULL,
         history_station_end_time TIMESTAMP NOT NULL,
-
+        data_source VARCHAR(50) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
