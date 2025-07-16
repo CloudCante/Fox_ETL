@@ -170,7 +170,7 @@ def monitor_for_files():
                 logger.info(f"🔄 STEP 2: Starting SnFn file processing pipeline...")
                 
                 success = process_file(
-                    SnFn_FILEPATH, 
+                    SNFN_FILEPATH, 
                     IMPORT_SnFn_SCRIPT, 
                     "snfn"
                 )
