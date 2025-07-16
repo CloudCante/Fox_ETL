@@ -21,6 +21,7 @@ def connect_to_db():
 def clean_column_name(col_name):
     return col_name.lower().replace(' ', '_').replace('-', '_')
 
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python import_snfn_file.py /path/to/file.xlsx")
@@ -51,7 +52,7 @@ def main():
                 'history_station_end_time': pd.to_datetime(row.get('history_station_end_time')).to_pydatetime(),
                 'data_source': 'snfn'
             }
-            mapped_data.append(mapped_row)
+        mapped_data.append(mapped_row)
         cursor = conn.cursor()
         
         # Check for existing records to avoid duplicates (excluding 'number_of_times_baseboard_is_used' column)
