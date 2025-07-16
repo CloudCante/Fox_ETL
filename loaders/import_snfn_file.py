@@ -96,6 +96,7 @@ def main():
             INSERT INTO snfn_master_log (
                 workstation_name, fixture_no, error_code, error_disc, sn, pn, model, history_station_start_time, history_station_end_time, data_source
             ) VALUES %s
+            ON CONFLICT DO NOTHING
             """
             from psycopg2.extras import execute_values
             values = [(
