@@ -14,7 +14,7 @@ INPUT_DIR = "/home/darvin/Fox_ETL/input"
 
 WORKSTATION_XLS_FILENAME = "workstationOutputReport.xls"
 TESTBOARD_XLS_FILENAME = "Test board record report.xls"
-SNFN_XLS_FILENAME = "snfnReport.xls"
+SNFN_XLS_FILENAME = "snfnReport.xlsx"
 WORKSTATION_FILEPATH = os.path.join(INPUT_DIR, WORKSTATION_XLS_FILENAME)
 TESTBOARD_FILEPATH = os.path.join(INPUT_DIR, TESTBOARD_XLS_FILENAME)
 SNFN_FILEPATH = os.path.join(INPUT_DIR, SNFN_XLS_FILENAME)
@@ -190,6 +190,7 @@ def monitor_for_files():
             import traceback
             logger.error(traceback.format_exc())
             time.sleep(10)
+
 
 if __name__ == "__main__":
     monitor_for_files() 
