@@ -171,7 +171,7 @@ def monitor_for_files():
                 
                 success = process_file(
                     SNFN_FILEPATH, 
-                    IMPORT_SnFn_SCRIPT, 
+                    IMPORT_SNFN_SCRIPT, 
                     "snfn"
                 )
                 
