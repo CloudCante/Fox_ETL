@@ -40,7 +40,7 @@ def main():
         df = df.drop_duplicates(subset=dedup_cols)
         mapped_data = []
         for _, row in df.iterrows():
-                        mapped_row = {
+            mapped_row = {
                 'workstation_name': str(row.get('workstation_name', '')),
                 'fixture_no': str(row.get('fixture_no', '')).strip() or None,
                 'error_code': str(row.get('error_code', '')).strip() or None,
@@ -52,7 +52,7 @@ def main():
                 'history_station_end_time': pd.to_datetime(row.get('history_station_end_time')).to_pydatetime(),
                 'data_source': 'snfn'
             }
-        mapped_data.append(mapped_row)
+            mapped_data.append(mapped_row)
         cursor = conn.cursor()
         
         # Check for existing records to avoid duplicates (excluding 'number_of_times_baseboard_is_used' column)
