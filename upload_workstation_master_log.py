@@ -9,6 +9,7 @@ import os
 from psycopg2.extras import execute_values
 import logging
 from datetime import datetime
+import argparse
 
 # Setup logging
 logging.basicConfig(
@@ -94,11 +95,17 @@ def convert_empty_string(value):
 
 def main():
     logging.info("🚀 Uploading workstation data to workstation_master_log...")
-    conn = connect_to_db()
-    create_workstation_table(conn)
-    
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    excel_path = os.path.join(script_dir, "..", "workstationOutputReport.xlsx")
+
+    # Argument parser for file path
+    parser = argparse.ArgumentParser(description="Upload workstation Excel data to database.")
+    parser.add_argument('--file', type=str, help='Path to Excel file to upload', required=False)
+    args = parser.parse_args()
+
+    if args.file:
+        excel_path = args.file
+    else:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        excel_path = os.path.join(script_dir, "..", "workstationOutputReport.xlsx")
     logging.info(f"Looking for Excel file at: {excel_path}")
     if not os.path.isfile(excel_path):
         logging.error(f"Excel file not found: {excel_path}")
