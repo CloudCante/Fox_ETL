@@ -111,6 +111,9 @@ def main():
         logging.error(f"Excel file not found: {excel_path}")
         return
     workstation_files = [excel_path]
+
+    conn = connect_to_db()
+    create_workstation_table(conn)
     
     total_imported = 0
     
