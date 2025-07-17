@@ -96,16 +96,8 @@ def convert_empty_string(value):
 def main():
     logging.info("🚀 Uploading workstation data to workstation_master_log...")
 
-    # Argument parser for file path
-    parser = argparse.ArgumentParser(description="Upload workstation Excel data to database.")
-    parser.add_argument('--file', type=str, help='Path to Excel file to upload', required=False)
-    args = parser.parse_args()
-
-    if args.file:
-        excel_path = args.file
-    else:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        excel_path = os.path.join(script_dir, "..", "workstationOutputReport.xlsx")
+    # Hardcoded file path
+    excel_path = "/home/darvin/Fox_ETL/input/workstationOutputReport.xlsx"
     logging.info(f"Looking for Excel file at: {excel_path}")
     if not os.path.isfile(excel_path):
         logging.error(f"Excel file not found: {excel_path}")
