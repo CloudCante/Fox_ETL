@@ -96,13 +96,18 @@ def convert_empty_string(value):
 def main():
     logging.info("🚀 Uploading workstation data to workstation_master_log...")
 
-    # Hardcoded file path
-    excel_path = "/home/darvin/Fox_ETL/input/workstationOutputReport.xlsx"
-    logging.info(f"Looking for Excel file at: {excel_path}")
-    if not os.path.isfile(excel_path):
-        logging.error(f"Excel file not found: {excel_path}")
+    # Recursively find all .xlsx files in the data log/workstationreport_xlsx directory
+    base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "input", "data log", "workstationreport_xlsx")
+    logging.info(f"Looking for Excel files in: {base_dir}")
+    workstation_files = []
+    for root, dirs, files in os.walk(base_dir):
+        for file in files:
+            if file.lower().endswith('.xlsx'):
+                workstation_files.append(os.path.join(root, file))
+
+    if not workstation_files:
+        logging.error(f"No Excel files found in: {base_dir}")
         return
-    workstation_files = [excel_path]
 
     conn = connect_to_db()
     create_workstation_table(conn)

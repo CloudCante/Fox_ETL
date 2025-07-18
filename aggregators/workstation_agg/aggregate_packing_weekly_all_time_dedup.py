@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import psycopg2
 from psycopg2.extras import execute_values
 from datetime import datetime, timedelta
@@ -65,11 +64,11 @@ def main():
                 ) for r in rows]
                 execute_values(cur, INSERT_SQL, values)
                 conn.commit()
-                print("✅ All-time packing aggregation complete, data deduplicated and upserted.")
+                print("All-time packing aggregation complete, data deduplicated and upserted.")
             else:
                 print("No data to aggregate.")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         conn.rollback()
     finally:
         conn.close()

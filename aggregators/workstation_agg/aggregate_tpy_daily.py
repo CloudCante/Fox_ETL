@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import psycopg2
 import json
 from datetime import datetime, timedelta
@@ -29,14 +28,13 @@ def calculate_weekly_starters_for_date(target_date):
     week_start, week_end = get_week_bounds(target_date)
     week_id = get_week_id(target_date)
     
-    print(f"📅 Week {week_id}: {week_start.strftime('%Y-%m-%d')} to {week_end.strftime('%Y-%m-%d')}")
+    print(f"Week {week_id}: {week_start.strftime('%Y-%m-%d')} to {week_end.strftime('%Y-%m-%d')}")
     
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # Find parts that started this week (first activity timestamp in this week)
             start_date = week_start
-            end_date = week_end + timedelta(days=1)  # Include Sunday
+            end_date = week_end + timedelta(days=1)  
             
             cur.execute("""
                 WITH first_activity AS (
@@ -72,7 +70,7 @@ def calculate_weekly_starters_for_date(target_date):
                 by_model[model] = count
                 print(f"    {model}: {count} parts")
             
-            print(f"  📊 Week starters: {total_starters} parts")
+            print(f"Week starters: {total_starters} parts")
             
             return {
                 "weekId": week_id,
@@ -90,13 +88,13 @@ def calculate_daily_completions_from_week_starters(target_date, week_starters_li
     start_date = target_date
     end_date = target_date + timedelta(days=1)
     
-    print(f"🎯 Daily completions on {target_date.strftime('%Y-%m-%d')} from week starters...")
+    print(f"Daily completions on {target_date.strftime('%Y-%m-%d')} from week starters...")
     
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
             if not week_starters_list:
-                print(f"  ℹ️  No week starters to check")
+                print(f"No week starters to check")
                 return {
                     "completedToday": 0,
                     "firstPassToday": 0,
@@ -104,7 +102,6 @@ def calculate_daily_completions_from_week_starters(target_date, week_starters_li
                     "byModel": {}
                 }
             
-            # Check which week starters completed today
             cur.execute("""
                 WITH completion_check AS (
                     SELECT 
@@ -142,8 +139,8 @@ def calculate_daily_completions_from_week_starters(target_date, week_starters_li
             
             daily_fpy = (first_pass_today / completed_today * 100) if completed_today > 0 else 0
             
-            print(f"  ✅ Completed today: {completed_today} parts")
-            print(f"  🎯 First pass today: {first_pass_today} parts ({daily_fpy:.2f}% FPY)")
+            print(f"Completed today: {completed_today} parts")
+            print(f"First pass today: {first_pass_today} parts ({daily_fpy:.2f}% FPY)")
             
             for model, counts in by_model.items():
                 model_fpy = (counts['firstPass'] / counts['completed'] * 100) if counts['completed'] > 0 else 0
@@ -160,22 +157,19 @@ def calculate_daily_completions_from_week_starters(target_date, week_starters_li
 
 def aggregate_daily_tpy_for_date(target_date):
     """Aggregate daily TPY metrics for a specific date"""
-    print(f"\n📊 AGGREGATING DAILY TPY FOR: {target_date.strftime('%Y-%m-%d')}")
+    print(f"\nAGGREGATING DAILY TPY FOR: {target_date.strftime('%Y-%m-%d')}")
     print("=" * 60)
     
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # 1. Get week starters (parts that started this week)
             week_data = calculate_weekly_starters_for_date(target_date)
             
-            # 2. Calculate daily completions from week starters
             daily_completions = calculate_daily_completions_from_week_starters(
                 target_date, 
                 week_data['weekStarters']
             )
             
-            # 3. Calculate daily throughput yield by model and station
             start_date = target_date
             end_date = target_date + timedelta(days=1)
             
@@ -199,12 +193,10 @@ def aggregate_daily_tpy_for_date(target_date):
             
             results = cur.fetchall()
             
-            # 4. Insert daily TPY metrics
             inserted_count = 0
             for model, workstation, total, passed, failed in results:
                 throughput_yield = (passed / total * 100) if total > 0 else 0
                 
-                # Upsert daily TPY metrics with week metadata
                 cur.execute("""
                     INSERT INTO daily_tpy_metrics 
                         (date_id, model, workstation_name, total_parts, passed_parts, failed_parts, throughput_yield,
@@ -229,10 +221,10 @@ def aggregate_daily_tpy_for_date(target_date):
             
             conn.commit()
             
-            print(f"\n✅ Daily TPY aggregation complete!")
-            print(f"  📊 Inserted/Updated {inserted_count} station-model combinations")
-            print(f"  🎯 Daily FPY: {daily_completions['dailyFPY']:.1f}%")
-            print(f"  📅 Date: {target_date.strftime('%Y-%m-%d')}")
+            print(f"\nDaily TPY aggregation complete!")
+            print(f"Inserted/Updated {inserted_count} station-model combinations")
+            print(f"Daily FPY: {daily_completions['dailyFPY']:.1f}%")
+            print(f"Date: {target_date.strftime('%Y-%m-%d')}")
             
             return {
                 "date": target_date,
@@ -247,7 +239,7 @@ def aggregate_daily_tpy_for_date(target_date):
 
 def get_all_available_dates():
     """Get all unique dates when actual testing occurred"""
-    print("📅 Finding all dates with actual test activity...")
+    print("Finding all dates with actual test activity...")
     
     conn = psycopg2.connect(**DB_CONFIG)
     try:
@@ -269,58 +261,53 @@ def get_all_available_dates():
 
 def aggregate_daily_tpy_metrics(mode='recent'):
     """Aggregate daily TPY metrics for specified dates"""
-    print("📊 DAILY TPY METRICS AGGREGATOR")
+    print("DAILY TPY METRICS AGGREGATOR")
     print("=" * 50)
     
-    # Get all available dates
     all_dates = get_all_available_dates()
     
     if not all_dates:
-        print("❌ No valid dates found in the dataset")
+        print("No valid dates found in the dataset")
         return
     
     if mode == 'all':
         dates_to_process = all_dates
-        print(f"\n🔄 Processing ALL {len(dates_to_process)} dates...")
+        print(f"\nProcessing ALL {len(dates_to_process)} dates...")
     else:
-        # Only process today and the past 2 days
         today = datetime.now().date()
         recent_dates = set([
             today,
             (today - timedelta(days=1)),
             (today - timedelta(days=2))
         ])
-        # Convert all_dates to date objects for comparison
         dates_to_process = [d for d in all_dates if d in recent_dates]
-        print(f"\n🔄 Processing RECENT {len(dates_to_process)} dates (today and past 2 days)...")
+        print(f"\nProcessing RECENT {len(dates_to_process)} dates (today and past 2 days)...")
     
     success_count = 0
     error_count = 0
     
     for i, target_date in enumerate(dates_to_process, 1):
         try:
-            print(f"\n📍 Processing {i}/{len(dates_to_process)}: {target_date.strftime('%Y-%m-%d')}")
+            print(f"\nProcessing {i}/{len(dates_to_process)}: {target_date.strftime('%Y-%m-%d')}")
             print("-" * 50)
             
             result = aggregate_daily_tpy_for_date(target_date)
             success_count += 1
             
         except Exception as e:
-            print(f"  ❌ ERROR processing {target_date.strftime('%Y-%m-%d')}: {str(e)}")
+            print(f"ERROR processing {target_date.strftime('%Y-%m-%d')}: {str(e)}")
             error_count += 1
     
-    # Final summary
-    print(f"\n🎉 DAILY TPY AGGREGATION COMPLETE!")
-    print(f"  ✅ Successfully processed: {success_count} dates")
-    print(f"  ❌ Errors: {error_count} dates")
+    print(f"\nDAILY TPY AGGREGATION COMPLETE!")
+    print(f"Successfully processed: {success_count} dates")
+    print(f"Errors: {error_count} dates")
     
-    # Show sample results
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT COUNT(*) FROM daily_tpy_metrics")
             total_records = cur.fetchone()[0]
-            print(f"  📊 Total records in daily_tpy_metrics: {total_records}")
+            print(f"Total records in daily_tpy_metrics: {total_records}")
             
             if total_records > 0:
                 cur.execute("""
@@ -330,7 +317,7 @@ def aggregate_daily_tpy_metrics(mode='recent'):
                     LIMIT 5;
                 """)
                 sample_results = cur.fetchall()
-                print(f"\n📋 SAMPLE RESULTS:")
+                print(f"\nSAMPLE RESULTS:")
                 for date_id, model, station, yield_pct in sample_results:
                     print(f"  {date_id} {model} {station}: {yield_pct:.1f}%")
     finally:

@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Aggregates hourly part counts per station from workstation_master_log.
-Groups by date, hour, and station, and saves the results to station_hourly_summary.
-
-Usage: python aggregate_station_hourly_counts.py
-"""
 import psycopg2
 from datetime import datetime
 
@@ -56,7 +49,6 @@ def aggregate_station_hourly_counts():
             print("-" * 40)
             for date, hour, station, count in results:
                 print(f"{date} {hour:>2}   {station:<16} {count:<6}")
-                # Upsert into summary table
                 cur.execute("""
                     INSERT INTO station_hourly_summary (date, hour, workstation_name, part_count)
                     VALUES (%s, %s, %s, %s)
@@ -64,7 +56,7 @@ def aggregate_station_hourly_counts():
                     DO UPDATE SET part_count = EXCLUDED.part_count;
                 """, (date, hour, station, count))
         conn.commit()
-        print("\n✅ Aggregated data has been saved to station_hourly_summary table.")
+        print("\nAggregated data has been saved to station_hourly_summary table.")
     finally:
         conn.close()
 

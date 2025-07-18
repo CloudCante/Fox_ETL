@@ -32,13 +32,12 @@ def get_week_date_range(week_id):
 
 def calculate_weekly_first_pass_yield_from_raw(week_start, week_end):
     """Calculate WEEKLY first pass yield using raw data from workstation_master_log"""
-    print(f"🎯 Calculating WEEKLY First Pass Yield from raw data...")
-    print(f"  Week range: {week_start.strftime('%Y-%m-%d')} to {week_end.strftime('%Y-%m-%d')}")
+    print(f"Calculating WEEKLY First Pass Yield from raw data...")
+    print(f"Week range: {week_start.strftime('%Y-%m-%d')} to {week_end.strftime('%Y-%m-%d')}")
     
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # Analyze each part's weekly performance using raw data
             cur.execute("""
                 WITH part_analysis AS (
                     SELECT 
@@ -67,20 +66,18 @@ def calculate_weekly_first_pass_yield_from_raw(week_start, week_end):
             if result and result[0] > 0:
                 parts_started, first_pass_success, parts_completed, parts_failed, parts_stuck = result
                 
-                # Traditional calculation
                 traditional_fpy = (first_pass_success / parts_started * 100) if parts_started > 0 else 0
                 
-                # Completed-only calculation (excluding stuck parts)
                 active_parts = parts_completed + parts_failed
                 completed_only_fpy = (first_pass_success / active_parts * 100) if active_parts > 0 else 0
                 
-                print(f"  📊 TRADITIONAL FPY: {first_pass_success}/{parts_started} = {traditional_fpy:.2f}%")
-                print(f"  🆕 COMPLETED-ONLY FPY: {first_pass_success}/{active_parts} = {completed_only_fpy:.2f}%")
-                print(f"  📈 Parts breakdown:")
-                print(f"    ✅ Completed: {parts_completed}")
-                print(f"    ❌ Failed: {parts_failed}")
-                print(f"    ⏸️  Stuck in limbo: {parts_stuck}")
-                print(f"    📊 Total: {parts_started}")
+                print(f"TRADITIONAL FPY: {first_pass_success}/{parts_started} = {traditional_fpy:.2f}%")
+                print(f"COMPLETED-ONLY FPY: {first_pass_success}/{active_parts} = {completed_only_fpy:.2f}%")
+                print(f"Parts breakdown:")
+                print(f"Completed: {parts_completed}")
+                print(f"Failed: {parts_failed}")
+                print(f"Stuck in limbo: {parts_stuck}")
+                print(f"Total: {parts_started}")
                 
                 return {
                     "traditional": {
@@ -101,7 +98,7 @@ def calculate_weekly_first_pass_yield_from_raw(week_start, week_end):
                     }
                 }
             else:
-                print(f"  📈 No data found for this week")
+                print(f"No data found for this week")
                 return {
                     "traditional": {"partsStarted": 0, "firstPassSuccess": 0, "firstPassYield": 0},
                     "completedOnly": {"activeParts": 0, "firstPassSuccess": 0, "firstPassYield": 0},
@@ -112,7 +109,7 @@ def calculate_weekly_first_pass_yield_from_raw(week_start, week_end):
 
 def calculate_model_specific_throughput_yields(week_start, week_end):
     """Calculate MODEL-SPECIFIC throughput yields from raw data"""
-    print(f"🔧 Calculating MODEL-SPECIFIC Throughput Yields...")
+    print(f"Calculating MODEL-SPECIFIC Throughput Yields...")
     
     conn = psycopg2.connect(**DB_CONFIG)
     try:
@@ -137,22 +134,19 @@ def calculate_model_specific_throughput_yields(week_start, week_end):
             
             results = cur.fetchall()
             
-            # Organize by model
             model_specific_yields = {
                 "Tesla SXM4": {},
                 "Tesla SXM5": {},
                 "overall": {}
             }
             
-            # Aggregate for overall station metrics
             overall_aggregates = {}
             
-            print(f"  📊 Model-Specific Station Performance:")
+            print(f"Model-Specific Station Performance:")
             
             for model, station, total, passed, failed in results:
                 throughput_yield = (passed / total * 100) if total > 0 else 0
                 
-                # Store model-specific data
                 if model in model_specific_yields:
                     model_specific_yields[model][station] = {
                         "totalParts": total,
@@ -160,9 +154,8 @@ def calculate_model_specific_throughput_yields(week_start, week_end):
                         "failedParts": failed,
                         "throughputYield": round(throughput_yield, 2)
                     }
-                    print(f"    {model} {station}: {passed}/{total} = {throughput_yield:.1f}%")
+                    print(f"{model} {station}: {passed}/{total} = {throughput_yield:.1f}%")
                 
-                # Aggregate for overall metrics
                 if station not in overall_aggregates:
                     overall_aggregates[station] = {'totalParts': 0, 'passedParts': 0, 'failedParts': 0}
                 
@@ -170,7 +163,6 @@ def calculate_model_specific_throughput_yields(week_start, week_end):
                 overall_aggregates[station]['passedParts'] += passed
                 overall_aggregates[station]['failedParts'] += failed
             
-            # Calculate overall station metrics
             for station, totals in overall_aggregates.items():
                 throughput_yield = (totals['passedParts'] / totals['totalParts'] * 100) if totals['totalParts'] > 0 else 0
                 model_specific_yields["overall"][station] = {
@@ -186,7 +178,7 @@ def calculate_model_specific_throughput_yields(week_start, week_end):
 
 def calculate_hardcoded_tpy(model_yields):
     """Calculate hardcoded 4-station TPY"""
-    print(f"🧮 Calculating HARDCODED TPY (4-station formula)...")
+    print(f"Calculating HARDCODED TPY (4-station formula)...")
     
     hardcoded_tpy = {
         "SXM4": {"stations": {}, "tpy": None},
@@ -202,9 +194,9 @@ def calculate_hardcoded_tpy(model_yields):
             yield_pct = model_yields["Tesla SXM4"][station]["throughputYield"]
             hardcoded_tpy["SXM4"]["stations"][station] = yield_pct
             sxm4_values.append(yield_pct / 100.0)
-            print(f"  📊 SXM4 {station}: {yield_pct:.2f}%")
+            print(f"SXM4 {station}: {yield_pct:.2f}%")
         else:
-            print(f"  ⚠️  SXM4 {station}: NOT FOUND")
+            print(f"SXM4 {station}: NOT FOUND")
     
     # Calculate SXM4 TPY
     if len(sxm4_values) == 4:
@@ -212,7 +204,7 @@ def calculate_hardcoded_tpy(model_yields):
         for val in sxm4_values:
             tpy_value *= val
         hardcoded_tpy["SXM4"]["tpy"] = round(tpy_value * 100, 2)
-        print(f"  🎯 SXM4 Hardcoded TPY: {hardcoded_tpy['SXM4']['tpy']:.2f}%")
+        print(f"SXM4 Hardcoded TPY: {hardcoded_tpy['SXM4']['tpy']:.2f}%")
     
     # SXM5 formula: BBD × ASSY2 × FI × FQC
     sxm5_stations = ["BBD", "ASSY2", "FI", "FQC"]
@@ -223,17 +215,16 @@ def calculate_hardcoded_tpy(model_yields):
             yield_pct = model_yields["Tesla SXM5"][station]["throughputYield"]
             hardcoded_tpy["SXM5"]["stations"][station] = yield_pct
             sxm5_values.append(yield_pct / 100.0)
-            print(f"  📊 SXM5 {station}: {yield_pct:.2f}%")
+            print(f"SXM5 {station}: {yield_pct:.2f}%")
         else:
-            print(f"  ⚠️  SXM5 {station}: NOT FOUND")
+            print(f"SXM5 {station}: NOT FOUND")
     
-    # Calculate SXM5 TPY
     if len(sxm5_values) == 4:
         tpy_value = 1.0
         for val in sxm5_values:
             tpy_value *= val
         hardcoded_tpy["SXM5"]["tpy"] = round(tpy_value * 100, 2)
-        print(f"  🎯 SXM5 Hardcoded TPY: {hardcoded_tpy['SXM5']['tpy']:.2f}%")
+        print(f"SXM5 Hardcoded TPY: {hardcoded_tpy['SXM5']['tpy']:.2f}%")
     
     return hardcoded_tpy 
 
@@ -246,60 +237,49 @@ def calculate_dynamic_tpy(model_yields):
         "SXM5": {"stations": {}, "tpy": None, "stationCount": 0}
     }
     
-    # SXM4 dynamic TPY (all stations Tesla SXM4 parts went through)
     if "Tesla SXM4" in model_yields:
         sxm4_stations = model_yields["Tesla SXM4"]
         dynamic_tpy["SXM4"]["stations"] = {station: data["throughputYield"] for station, data in sxm4_stations.items()}
         dynamic_tpy["SXM4"]["stationCount"] = len(sxm4_stations)
         
-        # Multiply all SXM4 stations together
         tpy_value = 1.0
         for station, yield_pct in dynamic_tpy["SXM4"]["stations"].items():
             tpy_value *= (yield_pct / 100.0)
         
         dynamic_tpy["SXM4"]["tpy"] = round(tpy_value * 100, 2)
-        print(f"  🚀 SXM4 Dynamic TPY: {dynamic_tpy['SXM4']['tpy']:.2f}% (across {dynamic_tpy['SXM4']['stationCount']} stations)")
+        print(f"SXM4 Dynamic TPY: {dynamic_tpy['SXM4']['tpy']:.2f}% (across {dynamic_tpy['SXM4']['stationCount']} stations)")
     
-    # SXM5 dynamic TPY (all stations Tesla SXM5 parts went through)
     if "Tesla SXM5" in model_yields:
         sxm5_stations = model_yields["Tesla SXM5"]
         dynamic_tpy["SXM5"]["stations"] = {station: data["throughputYield"] for station, data in sxm5_stations.items()}
         dynamic_tpy["SXM5"]["stationCount"] = len(sxm5_stations)
-        
-        # Multiply all SXM5 stations together
         tpy_value = 1.0
         for station, yield_pct in dynamic_tpy["SXM5"]["stations"].items():
             tpy_value *= (yield_pct / 100.0)
         
         dynamic_tpy["SXM5"]["tpy"] = round(tpy_value * 100, 2)
-        print(f"  🚀 SXM5 Dynamic TPY: {dynamic_tpy['SXM5']['tpy']:.2f}% (across {dynamic_tpy['SXM5']['stationCount']} stations)")
+        print(f"SXM5 Dynamic TPY: {dynamic_tpy['SXM5']['tpy']:.2f}% (across {dynamic_tpy['SXM5']['stationCount']} stations)")
     
     return dynamic_tpy
 
 def aggregate_weekly_tpy_for_week(week_id):
     """Aggregate weekly TPY metrics for a specific week"""
-    print(f"\n📊 AGGREGATING WEEKLY TPY FOR: {week_id}")
+    print(f"\nAGGREGATING WEEKLY TPY FOR: {week_id}")
     print("=" * 60)
     
     week_start, week_end = get_week_date_range(week_id)
     
-    # 1. Calculate weekly first pass yield from raw data
     weekly_first_pass_yield = calculate_weekly_first_pass_yield_from_raw(week_start, week_end)
     
-    # 2. Calculate model-specific throughput yields from raw data
     model_specific_yields = calculate_model_specific_throughput_yields(week_start, week_end)
     
-    # 3. Calculate hardcoded TPY
     hardcoded_tpy = calculate_hardcoded_tpy(model_specific_yields)
     
-    # 4. Calculate dynamic TPY
     dynamic_tpy = calculate_dynamic_tpy(model_specific_yields)
     
-    # 5. Calculate overall yield from daily data
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # Get daily data for this week
             cur.execute("""
                 SELECT 
                     SUM(total_parts) as total_parts,
@@ -313,18 +293,15 @@ def aggregate_weekly_tpy_for_week(week_id):
             total_passed_parts = daily_result[1] if daily_result[1] else 0
             overall_yield = (total_passed_parts / total_parts_overall * 100) if total_parts_overall > 0 else 0
             
-            # Use overall station metrics for backward compatibility
             weekly_station_metrics = model_specific_yields["overall"]
             avg_throughput_yield = round(sum(s["throughputYield"] for s in weekly_station_metrics.values()) / len(weekly_station_metrics), 2) if weekly_station_metrics else 0
             
-            # Find best and worst stations
             best_station = None
             worst_station = None
             if weekly_station_metrics:
                 best_station = max(weekly_station_metrics.items(), key=lambda x: x[1]["throughputYield"])
                 worst_station = min(weekly_station_metrics.items(), key=lambda x: x[1]["throughputYield"])
             
-            # 6. Insert weekly TPY metrics
             cur.execute("""
                 INSERT INTO weekly_tpy_metrics (
                     week_id, week_start, week_end, days_in_week,
@@ -434,21 +411,21 @@ def aggregate_weekly_tpy_for_week(week_id):
             
             conn.commit()
             
-            print(f"\n✅ Weekly TPY aggregation complete!")
-            print(f"  📊 Week: {week_id}")
-            print(f"  🎯 Traditional FPY: {weekly_first_pass_yield['traditional']['firstPassYield']:.1f}%")
-            print(f"  🆕 Completed-Only FPY: {weekly_first_pass_yield['completedOnly']['firstPassYield']:.1f}%")
-            print(f"  📈 SXM4 Hardcoded TPY: {hardcoded_tpy['SXM4']['tpy']:.2f}%")
-            print(f"  🚀 SXM4 Dynamic TPY: {dynamic_tpy['SXM4']['tpy']:.2f}%")
-            print(f"  📈 SXM5 Hardcoded TPY: {hardcoded_tpy['SXM5']['tpy']:.2f}%")
-            print(f"  🚀 SXM5 Dynamic TPY: {dynamic_tpy['SXM5']['tpy']:.2f}%")
+            print(f"\nWeekly TPY aggregation complete!")
+            print(f"Week: {week_id}")
+            print(f"Traditional FPY: {weekly_first_pass_yield['traditional']['firstPassYield']:.1f}%")
+            print(f"Completed-Only FPY: {weekly_first_pass_yield['completedOnly']['firstPassYield']:.1f}%")
+            print(f"SXM4 Hardcoded TPY: {hardcoded_tpy['SXM4']['tpy']:.2f}%")
+            print(f"SXM4 Dynamic TPY: {dynamic_tpy['SXM4']['tpy']:.2f}%")
+            print(f"SXM5 Hardcoded TPY: {hardcoded_tpy['SXM5']['tpy']:.2f}%")
+            print(f"SXM5 Dynamic TPY: {dynamic_tpy['SXM5']['tpy']:.2f}%")
             
     finally:
         conn.close() 
 
 def get_all_available_weeks():
     """Get all ISO weeks that have daily data"""
-    print("📅 Finding all weeks with daily metrics...")
+    print("Finding all weeks with daily metrics...")
     
     conn = psycopg2.connect(**DB_CONFIG)
     try:
@@ -471,44 +448,41 @@ def get_all_available_weeks():
 
 def aggregate_weekly_tpy_metrics_all_time():
     """Aggregate weekly TPY metrics for all historical weeks"""
-    print("📊 WEEKLY TPY METRICS ALL-TIME AGGREGATOR")
+    print("WEEKLY TPY METRICS ALL-TIME AGGREGATOR")
     print("=" * 50)
     
-    # Get all available weeks
     weeks_to_process = get_all_available_weeks()
     if not weeks_to_process:
-        print("❌ No valid weeks found")
+        print("No valid weeks found")
         return
     
-    print(f"\n🔄 Processing ALL {len(weeks_to_process)} historical weeks...")
+    print(f"\nProcessing ALL {len(weeks_to_process)} historical weeks...")
     
     success_count = 0
     error_count = 0
     
     for i, week_id in enumerate(weeks_to_process, 1):
         try:
-            print(f"\n📍 Processing {i}/{len(weeks_to_process)}: {week_id}")
+            print(f"\nProcessing {i}/{len(weeks_to_process)}: {week_id}")
             print("-" * 40)
             
             aggregate_weekly_tpy_for_week(week_id)
             success_count += 1
             
         except Exception as e:
-            print(f"  ❌ ERROR processing {week_id}: {str(e)}")
+            print(f"ERROR processing {week_id}: {str(e)}")
             error_count += 1
     
-    # Final summary
-    print(f"\n🎉 WEEKLY TPY ALL-TIME AGGREGATION COMPLETE!")
-    print(f"  ✅ Successfully processed: {success_count} weeks")
-    print(f"  ❌ Errors: {error_count} weeks")
+    print(f"\nWEEKLY TPY ALL-TIME AGGREGATION COMPLETE!")
+    print(f"Successfully processed: {success_count} weeks")
+    print(f"Errors: {error_count} weeks")
     
-    # Show sample results
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
             cur.execute("SELECT COUNT(*) FROM weekly_tpy_metrics")
             total_records = cur.fetchone()[0]
-            print(f"  📊 Total records in weekly_tpy_metrics: {total_records}")
+            print(f"Total records in weekly_tpy_metrics: {total_records}")
             
             if total_records > 0:
                 cur.execute("""
@@ -519,7 +493,7 @@ def aggregate_weekly_tpy_metrics_all_time():
                     LIMIT 3;
                 """)
                 sample_results = cur.fetchall()
-                print(f"\n📋 SAMPLE RESULTS:")
+                print(f"\nSAMPLE RESULTS:")
                 for week_id, sxm4_hard, sxm5_hard, sxm4_dyn, sxm5_dyn in sample_results:
                     print(f"  {week_id}: SXM4 Hard {sxm4_hard:.1f}% Dyn {sxm4_dyn:.1f}%, SXM5 Hard {sxm5_hard:.1f}% Dyn {sxm5_dyn:.1f}%")
     finally:

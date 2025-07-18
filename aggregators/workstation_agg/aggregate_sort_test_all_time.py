@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import psycopg2
 from datetime import datetime, timedelta
 
@@ -9,9 +8,6 @@ DB_CONFIG = {
     'password': '',
     'port': '5432'
 }
-
-# No need for a table if just printing, but you can create one if you want to persist
-# CREATE_TABLE_SQL = ...
 
 AGGREGATE_SQL = '''
 SELECT
@@ -44,11 +40,9 @@ def main():
             rows = cur.fetchall()
             print(f"Aggregated {len(rows)} rows.")
 
-            # Format as { '506': {date: count, ...}, '520': {date: count, ...} }
             sort_data = {'506': {}, '520': {}}
             for sort_code, test_date, test_count in rows:
                 if sort_code in sort_data:
-                    # Format date as MM/DD/YYYY
                     date_str = f"{test_date.month}/{test_date.day}/{test_date.year}"
                     sort_data[sort_code][date_str] = test_count
             print("\nSORT data for frontend:")
