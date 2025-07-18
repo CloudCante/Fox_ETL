@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Clean up database schema by removing problematic columns and recreating tables
-"""
 import psycopg2
 
 def connect_to_db():
@@ -14,17 +10,14 @@ def connect_to_db():
     )
 
 def cleanup_workstation_table():
-    """Recreate workstation_master_log with only necessary columns"""
     conn = connect_to_db()
     cursor = conn.cursor()
     
     try:
-        print("🧹 Cleaning up workstation_master_log table...")
+        print("Cleaning up workstation_master_log table...")
         
-        # Drop the old table
         cursor.execute("DROP TABLE IF EXISTS workstation_master_log")
         
-        # Create new table with only necessary columns
         create_query = """
         CREATE TABLE workstation_master_log (
             id SERIAL PRIMARY KEY,
@@ -51,28 +44,25 @@ def cleanup_workstation_table():
         cursor.execute(create_query)
         conn.commit()
         
-        print("✅ Workstation table recreated with clean schema")
-        print("📋 Columns: sn, pn, customer_pn, outbound_version, workstation_name, history_station_start_time, history_station_end_time, hours, service_flow, model, history_station_passing_status, passing_station_method, operator, first_station_start_time, data_source")
+        print("Workstation table recreated with clean schema")
+        print("Columns: sn, pn, customer_pn, outbound_version, workstation_name, history_station_start_time, history_station_end_time, hours, service_flow, model, history_station_passing_status, passing_station_method, operator, first_station_start_time, data_source")
         
     except Exception as e:
-        print(f"❌ Error recreating workstation table: {e}")
+        print(f"Error recreating workstation table: {e}")
         conn.rollback()
     finally:
         cursor.close()
         conn.close()
 
 def cleanup_testboard_table():
-    """Recreate testboard_master_log with only necessary columns"""
     conn = connect_to_db()
     cursor = conn.cursor()
     
     try:
-        print("🧹 Cleaning up testboard_master_log table...")
+        print("Cleaning up testboard_master_log table...")
         
-        # Drop the old table
         cursor.execute("DROP TABLE IF EXISTS testboard_master_log")
         
-        # Create new table with only necessary columns
         create_query = """
         CREATE TABLE testboard_master_log (
             id SERIAL PRIMARY KEY,
@@ -101,38 +91,35 @@ def cleanup_testboard_table():
         cursor.execute(create_query)
         conn.commit()
         
-        print("✅ Testboard table recreated with clean schema")
-        print("📋 Columns: sn, pn, model, work_station_process, baseboard_sn, baseboard_pn, workstation_name, history_station_start_time, history_station_end_time, history_station_passing_status, operator, failure_reasons, failure_note, failure_code, diag_version, fixture_no, data_source")
+        print("Testboard table recreated with clean schema")
+        print("Columns: sn, pn, model, work_station_process, baseboard_sn, baseboard_pn, workstation_name, history_station_start_time, history_station_end_time, history_station_passing_status, operator, failure_reasons, failure_note, failure_code, diag_version, fixture_no, data_source")
         
     except Exception as e:
-        print(f"❌ Error recreating testboard table: {e}")
+        print(f"Error recreating testboard table: {e}")
         conn.rollback()
     finally:
         cursor.close()
         conn.close()
 
 def main():
-    """Clean up both tables"""
-    print("🚀 Starting database schema cleanup...")
+    print("Starting database schema cleanup...")
     print("=" * 60)
     
-    # Clean up workstation table
     cleanup_workstation_table()
     
     print()
     
-    # Clean up testboard table
     cleanup_testboard_table()
     
     print()
-    print("📊 Cleanup Summary")
+    print("Cleanup Summary")
     print("=" * 60)
-    print("✅ Workstation table: Removed problematic columns (day, etc.)")
-    print("✅ Testboard table: Removed problematic columns (number_of_times_baseboard_is_used, etc.)")
-    print("✅ Both tables now have clean, focused schemas")
-    print("✅ Deduplication will work correctly with only relevant columns")
+    print("Workstation table: Removed problematic columns (day, etc.)")
+    print("Testboard table: Removed problematic columns (number_of_times_baseboard_is_used, etc.)")
+    print("Both tables now have clean, focused schemas")
+    print("Deduplication will work correctly with only relevant columns")
     
-    print("\n🔄 You can now test the import scripts with clean tables!")
+    print("\nYou can now test the import scripts with clean tables!")
 
 if __name__ == "__main__":
     main() 

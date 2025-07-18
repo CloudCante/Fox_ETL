@@ -1,4 +1,3 @@
--- Create daily TPY metrics table with correct primary key
 CREATE TABLE IF NOT EXISTS daily_tpy_metrics (
     date_id DATE NOT NULL,
     model VARCHAR(20) NOT NULL,
@@ -11,9 +10,7 @@ CREATE TABLE IF NOT EXISTS daily_tpy_metrics (
     PRIMARY KEY (date_id, model, workstation_name)
 );
 
--- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_daily_tpy_date_model ON daily_tpy_metrics(date_id, model);
 CREATE INDEX IF NOT EXISTS idx_daily_tpy_workstation ON daily_tpy_metrics(workstation_name);
 
--- Add comments for documentation
 COMMENT ON TABLE daily_tpy_metrics IS 'Daily throughput yield metrics by model and station'; 

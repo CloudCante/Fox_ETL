@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import psycopg2
 
 DB_CONFIG = {
@@ -14,7 +13,6 @@ def check_table_structure():
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # Get column information
             cur.execute("""
                 SELECT column_name, data_type, is_nullable
                 FROM information_schema.columns 
@@ -23,14 +21,13 @@ def check_table_structure():
             """)
             
             columns = cur.fetchall()
-            print("📋 workstation_master_log table structure:")
+            print("workstation_master_log table structure:")
             print("=" * 50)
             for col_name, data_type, is_nullable in columns:
                 nullable = "NULL" if is_nullable == "YES" else "NOT NULL"
                 print(f"  {col_name}: {data_type} ({nullable})")
             
-            # Look for service flow related columns
-            print(f"\n🔍 Looking for service flow columns:")
+            print(f"\nLooking for service flow columns:")
             service_flow_candidates = []
             for col_name, data_type, is_nullable in columns:
                 if 'service' in col_name.lower() or 'flow' in col_name.lower():
@@ -40,8 +37,7 @@ def check_table_structure():
             if not service_flow_candidates:
                 print("  No obvious service flow columns found")
                 
-            # Check for metadata columns
-            print(f"\n🔍 Looking for metadata columns:")
+            print(f"\nLooking for metadata columns:")
             metadata_candidates = []
             for col_name, data_type, is_nullable in columns:
                 if 'metadata' in col_name.lower():
@@ -59,16 +55,14 @@ def check_sample_data():
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # Get one sample row
             cur.execute("""
                 SELECT * FROM workstation_master_log LIMIT 1;
             """)
             
-            # Get column names
             col_names = [desc[0] for desc in cur.description]
             row = cur.fetchone()
             
-            print(f"\n📊 Sample row data:")
+            print(f"\nSample row data:")
             print("=" * 30)
             for i, (col_name, value) in enumerate(zip(col_names, row)):
                 print(f"  {col_name}: {value}")
@@ -77,13 +71,13 @@ def check_sample_data():
         conn.close()
 
 def main():
-    print("🔍 Checking workstation_master_log table structure")
+    print("Checking workstation_master_log table structure")
     print("=" * 60)
     
     check_table_structure()
     check_sample_data()
     
-    print(f"\n✅ Structure check complete!")
+    print(f"\nStructure check complete!")
 
 if __name__ == "__main__":
     main() 

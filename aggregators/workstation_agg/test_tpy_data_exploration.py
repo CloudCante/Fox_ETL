@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import psycopg2
 from datetime import datetime, timedelta
 
@@ -15,7 +14,6 @@ def explore_service_flows():
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # Get all unique service flows
             cur.execute("""
                 SELECT DISTINCT service_flow 
                 FROM workstation_master_log 
@@ -24,7 +22,7 @@ def explore_service_flows():
             """)
             
             service_flows = [row[0] for row in cur.fetchall()]
-            print("🔍 Service Flows Found:")
+            print("Service Flows Found:")
             for flow in service_flows:
                 print(f"  - {flow}")
             
@@ -49,7 +47,7 @@ def explore_workstations_by_service_flow():
             """)
             
             results = cur.fetchall()
-            print("\n📊 Workstations by Service Flow:")
+            print("\nWorkstations by Service Flow:")
             current_flow = None
             for flow, station, count in results:
                 if flow != current_flow:
@@ -67,10 +65,9 @@ def test_filtered_data_for_date(target_date):
             start_date = target_date
             end_date = target_date + timedelta(days=1)
             
-            print(f"\n📅 Testing data for {target_date.strftime('%Y-%m-%d')}")
+            print(f"\nTesting data for {target_date.strftime('%Y-%m-%d')}")
             print("=" * 50)
             
-            # Test 1: Count records by service flow
             cur.execute("""
                 SELECT 
                     service_flow,
@@ -84,11 +81,10 @@ def test_filtered_data_for_date(target_date):
             """, (start_date, end_date))
             
             service_flow_counts = cur.fetchall()
-            print("📊 Records by Service Flow:")
+            print("Records by Service Flow:")
             for flow, count in service_flow_counts:
                 print(f"  {flow}: {count:,} records")
             
-            # Test 2: Count records after filtering out NC Sort and RO
             cur.execute("""
                 SELECT 
                     COUNT(*) as total_records,
@@ -102,12 +98,11 @@ def test_filtered_data_for_date(target_date):
             """, (start_date, end_date))
             
             filtered_stats = cur.fetchone()
-            print(f"\n✅ After filtering (excluding NC Sort and RO):")
+            print(f"\nAfter filtering (excluding NC Sort and RO):")
             print(f"  Total records: {filtered_stats[0]:,}")
             print(f"  Unique parts: {filtered_stats[1]:,}")
             print(f"  Unique stations: {filtered_stats[2]:,}")
             
-            # Test 3: Show stations and their throughput yields
             cur.execute("""
                 SELECT 
                     workstation_name,
@@ -127,12 +122,11 @@ def test_filtered_data_for_date(target_date):
             """, (start_date, end_date))
             
             station_results = cur.fetchall()
-            print(f"\n🏭 Top Stations (filtered data):")
+            print(f"\nTop Stations (filtered data):")
             for station, model, total, passed, failed in station_results:
                 throughput_yield = (passed / total * 100) if total > 0 else 0
                 print(f"  {station} ({model}): {passed}/{total} = {throughput_yield:.1f}%")
             
-            # Test 4: Check for models
             cur.execute("""
                 SELECT 
                     model,
@@ -147,7 +141,7 @@ def test_filtered_data_for_date(target_date):
             """, (start_date, end_date))
             
             model_counts = cur.fetchall()
-            print(f"\n🚗 Models (filtered data):")
+            print(f"\nModels (filtered data):")
             for model, count in model_counts:
                 print(f"  {model}: {count:,} records")
                 
@@ -156,10 +150,9 @@ def test_filtered_data_for_date(target_date):
 
 def test_tpy_calculation_logic():
     """Test the TPY calculation logic with sample data"""
-    print(f"\n🧮 Testing TPY Calculation Logic:")
+    print(f"\nTesting TPY Calculation Logic:")
     print("=" * 40)
     
-    # Sample data structure we'll be working with
     sample_data = {
         "Tesla SXM4": {
             "VI2": {"totalParts": 567, "passedParts": 547, "throughputYield": 96.47},
@@ -175,10 +168,8 @@ def test_tpy_calculation_logic():
         }
     }
     
-    # Hardcoded TPY calculation
-    print("📈 Hardcoded TPY (4-station formula):")
+    print("Hardcoded TPY (4-station formula):")
     
-    # SXM4: VI2 × ASSY2 × FI × FQC
     sxm4_stations = ["VI2", "ASSY2", "FI", "FQC"]
     sxm4_tpy = 1.0
     for station in sxm4_stations:
@@ -186,9 +177,8 @@ def test_tpy_calculation_logic():
             yield_pct = sample_data["Tesla SXM4"][station]["throughputYield"]
             sxm4_tpy *= (yield_pct / 100.0)
             print(f"  SXM4 {station}: {yield_pct:.2f}%")
-    print(f"  🎯 SXM4 TPY: {sxm4_tpy * 100:.2f}%")
+    print(f"SXM4 TPY: {sxm4_tpy * 100:.2f}%")
     
-    # SXM5: BBD × ASSY2 × FI × FQC
     sxm5_stations = ["BBD", "ASSY2", "FI", "FQC"]
     sxm5_tpy = 1.0
     for station in sxm5_stations:
@@ -196,19 +186,16 @@ def test_tpy_calculation_logic():
             yield_pct = sample_data["Tesla SXM5"][station]["throughputYield"]
             sxm5_tpy *= (yield_pct / 100.0)
             print(f"  SXM5 {station}: {yield_pct:.2f}%")
-    print(f"  🎯 SXM5 TPY: {sxm5_tpy * 100:.2f}%")
+    print(f"SXM5 TPY: {sxm5_tpy * 100:.2f}%")
     
-    # Dynamic TPY calculation
-    print(f"\n🚀 Dynamic TPY (all-stations per model):")
+    print(f"\nDynamic TPY (all-stations per model):")
     
-    # SXM4 dynamic (all stations)
     sxm4_all_stations = sample_data["Tesla SXM4"]
     sxm4_dynamic_tpy = 1.0
     for station, data in sxm4_all_stations.items():
         sxm4_dynamic_tpy *= (data["throughputYield"] / 100.0)
     print(f"  SXM4 Dynamic TPY: {sxm4_dynamic_tpy * 100:.2f}% (across {len(sxm4_all_stations)} stations)")
     
-    # SXM5 dynamic (all stations)
     sxm5_all_stations = sample_data["Tesla SXM5"]
     sxm5_dynamic_tpy = 1.0
     for station, data in sxm5_all_stations.items():
@@ -216,23 +203,19 @@ def test_tpy_calculation_logic():
     print(f"  SXM5 Dynamic TPY: {sxm5_dynamic_tpy * 100:.2f}% (across {len(sxm5_all_stations)} stations)")
 
 def main():
-    print("🔍 TPY Data Exploration Script")
+    print("TPY Data Exploration Script")
     print("=" * 50)
     
-    # Step 1: Explore service flows
     service_flows = explore_service_flows()
     
-    # Step 2: Explore workstations by service flow
     explore_workstations_by_service_flow()
     
-    # Step 3: Test filtered data for a recent date
-    test_date = datetime.now().date() - timedelta(days=1)  # Yesterday
+    test_date = datetime.now().date() - timedelta(days=1)  
     test_filtered_data_for_date(test_date)
     
-    # Step 4: Test TPY calculation logic
     test_tpy_calculation_logic()
     
-    print(f"\n✅ Exploration complete! Ready to build the aggregator.")
+    print(f"\nExploration complete! Ready to build the aggregator.")
 
 if __name__ == "__main__":
     main() 

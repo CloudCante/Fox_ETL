@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import psycopg2
 from psycopg2.extras import execute_values
 
@@ -68,17 +67,16 @@ def main():
             print(f"Aggregated {len(rows)} rows.")
 
             if rows:
-                # Insert new summary rows (with upsert for safety)
                 values = [(
                     r[0], r[1], r[2], r[3], r[5], r[6], r[4], r[7]
                 ) for r in rows]
                 execute_values(cur, INSERT_SQL, values)
                 conn.commit()
-                print("✅ Aggregation complete, data deduplicated and upserted.")
+                print("Aggregation complete, data deduplicated and upserted.")
             else:
                 print("No data to aggregate.")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         conn.rollback()
     finally:
         conn.close()

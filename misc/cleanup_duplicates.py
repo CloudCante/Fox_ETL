@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Clean up duplicate records from both database tables
-Keeps one copy of each unique record based on our deduplication rules
-"""
 import psycopg2
 
 def connect_to_db():
@@ -15,20 +10,16 @@ def connect_to_db():
     )
 
 def cleanup_workstation_duplicates():
-    """Remove duplicates from workstation_master_log (using only existing columns)"""
     conn = connect_to_db()
     cursor = conn.cursor()
     
     try:
-        print("🧹 Cleaning up workstation_master_log duplicates...")
+        print("Cleaning up workstation_master_log duplicates...")
         
-        # Get initial count
         cursor.execute("SELECT COUNT(*) FROM workstation_master_log")
         initial_count = cursor.fetchone()[0]
-        print(f"📊 Initial record count: {initial_count:,}")
+        print(f"Initial record count: {initial_count:,}")
         
-        # Delete duplicates keeping the first occurrence
-        # Using only the columns that actually exist in the new schema
         cleanup_query = """
         DELETE FROM workstation_master_log 
         WHERE id IN (
@@ -51,18 +42,17 @@ def cleanup_workstation_duplicates():
         deleted_count = cursor.rowcount
         conn.commit()
         
-        # Get final count
         cursor.execute("SELECT COUNT(*) FROM workstation_master_log")
         final_count = cursor.fetchone()[0]
         
-        print(f"🗑️ Deleted {deleted_count:,} duplicate records")
-        print(f"📊 Final record count: {final_count:,}")
-        print(f"✅ Workstation cleanup complete!")
+        print(f"Deleted {deleted_count:,} duplicate records")
+        print(f"Final record count: {final_count:,}")
+        print(f"Workstation cleanup complete!")
         
         return deleted_count
         
     except Exception as e:
-        print(f"❌ Error cleaning workstation duplicates: {e}")
+        print(f"Error cleaning workstation duplicates: {e}")
         conn.rollback()
         return 0
     finally:
@@ -70,20 +60,16 @@ def cleanup_workstation_duplicates():
         conn.close()
 
 def cleanup_testboard_duplicates():
-    """Remove duplicates from testboard_master_log (using only existing columns)"""
     conn = connect_to_db()
     cursor = conn.cursor()
     
     try:
-        print("🧹 Cleaning up testboard_master_log duplicates...")
+        print("Cleaning up testboard_master_log duplicates...")
         
-        # Get initial count
         cursor.execute("SELECT COUNT(*) FROM testboard_master_log")
         initial_count = cursor.fetchone()[0]
-        print(f"📊 Initial record count: {initial_count:,}")
-        
-        # Delete duplicates keeping the first occurrence
-        # Using only the columns that actually exist in the new schema
+        print(f"Initial record count: {initial_count:,}")
+    
         cleanup_query = """
         DELETE FROM testboard_master_log 
         WHERE id IN (
@@ -107,18 +93,17 @@ def cleanup_testboard_duplicates():
         deleted_count = cursor.rowcount
         conn.commit()
         
-        # Get final count
         cursor.execute("SELECT COUNT(*) FROM testboard_master_log")
         final_count = cursor.fetchone()[0]
         
-        print(f"🗑️ Deleted {deleted_count:,} duplicate records")
-        print(f"📊 Final record count: {final_count:,}")
-        print(f"✅ Testboard cleanup complete!")
+        print(f"Deleted {deleted_count:,} duplicate records")
+        print(f"Final record count: {final_count:,}")
+        print(f"Testboard cleanup complete!")
         
         return deleted_count
         
     except Exception as e:
-        print(f"❌ Error cleaning testboard duplicates: {e}")
+        print(f"Error cleaning testboard duplicates: {e}")
         conn.rollback()
         return 0
     finally:
@@ -126,30 +111,27 @@ def cleanup_testboard_duplicates():
         conn.close()
 
 def main():
-    """Run cleanup for both tables"""
-    print("🚀 Starting duplicate cleanup process...")
+    print("Starting duplicate cleanup process...")
     print("=" * 50)
     
-    # Clean up workstation duplicates
     workstation_deleted = cleanup_workstation_duplicates()
     
     print()
     
-    # Clean up testboard duplicates
     testboard_deleted = cleanup_testboard_duplicates()
     
     print()
-    print("📊 Cleanup Summary")
+    print("Cleanup Summary")
     print("=" * 50)
     print(f"Workstation duplicates removed: {workstation_deleted:,}")
     print(f"Testboard duplicates removed: {testboard_deleted:,}")
     print(f"Total duplicates removed: {workstation_deleted + testboard_deleted:,}")
     
     if workstation_deleted > 0 or testboard_deleted > 0:
-        print("✅ Database cleaned up successfully!")
-        print("🔄 You can now test the import scripts again - they should show 0 new records.")
+        print("Database cleaned up successfully!")
+        print("You can now test the import scripts again - they should show 0 new records.")
     else:
-        print("✅ No duplicates found - database is already clean!")
+        print("No duplicates found - database is already clean!")
 
 if __name__ == "__main__":
     main() 
