@@ -16,27 +16,22 @@ def connect_to_db():
     )
 
 def debug_workstation_deduplication():
-    """Debug the workstation deduplication logic"""
-    print("🔍 DEBUGGING WORKSTATION DEDUPLICATION")
+    print("DEBUGGING WORKSTATION DEDUPLICATION")
     print("=" * 60)
-    
-    # Read the same file that was just imported
     file_path = "/home/cloud/projects/ETL_V2/input/workstationOutputReport.xlsx"
     if not os.path.exists(file_path):
-        print(f"❌ File not found: {file_path}")
+        print(f"File not found: {file_path}")
         return
     
-    print(f"📁 Reading file: {file_path}")
+    print(f"Reading file: {file_path}")
     df = pd.read_excel(file_path)
-    print(f"📊 File contains {len(df)} records")
+    print(f"File contains {len(df)} records")
     
-    # Clean column names like the import script does
     df.columns = [col.lower().replace(' ', '_').replace('-', '_') for col in df.columns]
     df['data_source'] = 'workstation'
     
-    # Take first few records for testing
     test_records = df.head(3)
-    print(f"\n🧪 Testing first 3 records from file:")
+    print(f"\nTesting first 3 records from file:")
     
     conn = connect_to_db()
     cursor = conn.cursor()
@@ -44,8 +39,7 @@ def debug_workstation_deduplication():
     try:
         for i, (_, row) in enumerate(test_records.iterrows()):
             print(f"\n--- RECORD {i+1} ---")
-            
-            # Prepare the data like the import script does
+                
             mapped_row = {
                 'sn': str(row.get('sn', '')),
                 'pn': str(row.get('pn', '')),
@@ -73,11 +67,10 @@ def debug_workstation_deduplication():
                 'data_source': 'workstation'
             }
             
-            print(f"📋 Record data types:")
+            print(f"Record data types:")
             for key, value in mapped_row.items():
                 print(f"  {key}: {type(value).__name__} = {value}")
             
-            # Check query like the import script
             check_query = """
             SELECT COUNT(*) FROM workstation_master_log 
             WHERE sn = %s 
@@ -116,14 +109,13 @@ def debug_workstation_deduplication():
                 mapped_row['passing_station_method'], mapped_row['first_station_start_time'], mapped_row['data_source']
             )
             
-            print(f"\n🔍 Checking database for matches...")
+            print(f"\nChecking database for matches...")
             cursor.execute(check_query, check_values)
             exists = cursor.fetchone()[0]
-            print(f"📊 Database matches found: {exists}")
+            print(f"Database matches found: {exists}")
             
             if exists > 0:
-                # Let's see what the actual database record looks like
-                print(f"🔍 Found matching record in database:")
+                print(f"Found matching record in database:")
                 cursor.execute("""
                     SELECT * FROM workstation_master_log 
                     WHERE sn = %s AND pn = %s AND model = %s
@@ -132,8 +124,7 @@ def debug_workstation_deduplication():
                 
                 db_record = cursor.fetchone()
                 if db_record:
-                    print(f"📋 Database record data types:")
-                    # Get column names
+                    print(f"Database record data types:")
                     cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'workstation_master_log' ORDER BY ordinal_position")
                     columns = [col[0] for col in cursor.fetchall()]
                     
@@ -143,7 +134,7 @@ def debug_workstation_deduplication():
             print(f"\n{'='*60}")
     
     except Exception as e:
-        print(f"❌ Error during debugging: {e}")
+        print(f"Error during debugging: {e}")
         import traceback
         traceback.print_exc()
     finally:

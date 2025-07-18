@@ -8,7 +8,6 @@ import shutil
 from pathlib import Path
 import logging
 
-# Configure logging
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,6 @@ def setup_driver():
         return None
 
 def monitor_and_move_file(filename):
-    # Linux paths
     downloads_path = "/home/darvin/Downloads"
     target_path = "/home/darvin/Fox_ETL/input"
 
@@ -29,7 +27,6 @@ def monitor_and_move_file(filename):
     target_file = os.path.join(target_path, filename)
 
     try:
-        # Only proceed if source file exists
         if os.path.exists(source_file):
             shutil.move(source_file, target_file)
             logger.info(f"File moved to processing queue: {filename}")
@@ -46,7 +43,6 @@ def wait_for_download(filename, timeout=60):
     
     while time.time() - start_time < timeout:
         if os.path.exists(file_path):
-            # Wait a bit more to ensure file is fully written
             time.sleep(2)
             return True
         time.sleep(1)
@@ -56,18 +52,15 @@ def main():
     driver = setup_driver()
     if driver:
         try:
-            # Open first tab and navigate to the first report page
             driver.get("https://wareconn.com/r/Summary/pctls")
             input("Login and configure BOTH forms in two tabs, then press Enter to start auto-submit...\n\nTab 1: workstationOutputReport.xls\nTab 2: Test board record report.xls\n\nMake sure both tabs are ready and on the correct form page.")
 
-            # Open second tab for the second report
             driver.execute_script("window.open('https://wareconn.com/r/Summary/pctls', '_blank');")
             time.sleep(2)
             tabs = driver.window_handles
             tab1 = tabs[0]
             tab2 = tabs[1]
 
-            # Let user configure the second tab
             driver.switch_to.window(tab2)
             input("Configure the second tab for 'Test board record report.xls', then press Enter to continue...")
             driver.switch_to.window(tab1)
@@ -76,7 +69,6 @@ def main():
             testboard_filename = "Test board record report.xls"
 
             while True:
-                # --- Tab 1: workstationOutputReport.xls ---
                 driver.switch_to.window(tab1)
                 try:
                     confirm_button1 = WebDriverWait(driver, 10).until(
@@ -85,7 +77,6 @@ def main():
                     confirm_button1.click()
                     logger.info("Clicked confirm on Tab 1 (workstation report)")
                     
-                    # Wait for workstation download to complete
                     if wait_for_download(workstation_filename):
                         logger.info("Workstation file download completed")
                         monitor_and_move_file(workstation_filename)
@@ -95,7 +86,6 @@ def main():
                 except Exception as e:
                     logger.error(f"Could not click confirm button on Tab 1: {e}")
 
-                # --- Tab 2: Test board record report.xls ---
                 driver.switch_to.window(tab2)
                 try:
                     confirm_button2 = WebDriverWait(driver, 10).until(
@@ -104,7 +94,6 @@ def main():
                     confirm_button2.click()
                     logger.info("Clicked confirm on Tab 2 (test board report)")
                     
-                    # Wait for testboard download to complete
                     if wait_for_download(testboard_filename):
                         logger.info("Testboard file download completed")
                         monitor_and_move_file(testboard_filename)
@@ -114,9 +103,8 @@ def main():
                 except Exception as e:
                     logger.error(f"Could not click confirm button on Tab 2: {e}")
 
-                # Switch back to Tab 1 and wait before next cycle
                 driver.switch_to.window(tab1)
-                time.sleep(120)  # Wait 2 minutes before next cycle
+                time.sleep(120)  
 
         except Exception as e:
             logger.error(f"Error during extraction process: {e}")

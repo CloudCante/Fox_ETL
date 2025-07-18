@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Detailed debug script to show exactly what's happening with the comparison
-"""
 import psycopg2
 import pandas as pd
 import os
@@ -16,28 +12,23 @@ def connect_to_db():
     )
 
 def debug_comparison():
-    """Debug the exact comparison logic"""
-    print("🔍 DEBUGGING COMPARISON LOGIC")
+    print("DEBUGGING COMPARISON LOGIC")
     print("=" * 60)
     
-    # Read the same file
     file_path = "/home/cloud/projects/ETL_V2/input/workstationOutputReport.xlsx"
     if not os.path.exists(file_path):
-        print(f"❌ File not found: {file_path}")
+        print(f"File not found: {file_path}")
         return
     
-    print(f"📁 Reading file: {file_path}")
+    print(f"Reading file: {file_path}")
     df = pd.read_excel(file_path)
     
-    # Clean column names like the import script does
     df.columns = [col.lower().replace(' ', '_').replace('-', '_') for col in df.columns]
     df['data_source'] = 'workstation'
     
-    # Take first record
     row = df.iloc[0]
-    print(f"\n🧪 Testing first record from file:")
+    print(f"\nTesting first record from file:")
     
-    # Prepare the data exactly like the import script does
     mapped_row = {
         'sn': str(row.get('sn', '')),
         'pn': str(row.get('pn', '')),
@@ -65,7 +56,7 @@ def debug_comparison():
         'data_source': 'workstation'
     }
     
-    print(f"📋 File record data:")
+    print(f"File record data:")
     for key, value in mapped_row.items():
         print(f"  {key}: {type(value).__name__} = {value}")
     
@@ -73,7 +64,6 @@ def debug_comparison():
     cursor = conn.cursor()
     
     try:
-        # Test the exact comparison query from the import script
         check_query = """
         SELECT COUNT(*) FROM workstation_master_log 
         WHERE sn = %s 
@@ -112,50 +102,46 @@ def debug_comparison():
             mapped_row['passing_station_method'], mapped_row['first_station_start_time'], mapped_row['data_source']
         )
         
-        print(f"\n🔍 Running exact comparison query...")
-        print(f"📋 Query values:")
+        print(f"\nRunning exact comparison query...")
+        print(f"Query values:")
         for i, (key, value) in enumerate(mapped_row.items()):
             print(f"  {i+1}. {key}: {type(value).__name__} = {value}")
         
         cursor.execute(check_query, check_values)
         exists = cursor.fetchone()[0]
-        print(f"\n📊 Database matches found: {exists}")
+        print(f"\nDatabase matches found: {exists}")
         
         if exists == 0:
-            print(f"\n🔍 No matches found. Let's check what's actually in the database...")
+            print(f"\nNo matches found. Let's check what's actually in the database...")
             
-            # Let's see if we can find any records with the same SN
             cursor.execute("SELECT COUNT(*) FROM workstation_master_log WHERE sn = %s", (mapped_row['sn'],))
             sn_count = cursor.fetchone()[0]
-            print(f"📊 Records with same SN ({mapped_row['sn']}): {sn_count}")
+            print(f"Records with same SN ({mapped_row['sn']}): {sn_count}")
             
             if sn_count > 0:
-                # Get a sample record with the same SN
                 cursor.execute("SELECT * FROM workstation_master_log WHERE sn = %s LIMIT 1", (mapped_row['sn'],))
                 db_record = cursor.fetchone()
                 
-                # Get column names
                 cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'workstation_master_log' ORDER BY ordinal_position")
                 columns = [col[0] for col in cursor.fetchall()]
                 
-                print(f"\n📋 Database record with same SN:")
+                print(f"\nDatabase record with same SN:")
                 for i, (col_name, value) in enumerate(zip(columns, db_record)):
                     print(f"  {col_name}: {type(value).__name__} = {value}")
                 
-                # Let's test a simpler comparison
-                print(f"\n🔍 Testing simpler comparison...")
+                print(f"\nTesting simpler comparison...")
                 simple_query = """
                 SELECT COUNT(*) FROM workstation_master_log 
                 WHERE sn = %s AND pn = %s AND model = %s AND workstation_name = %s
                 """
                 cursor.execute(simple_query, (mapped_row['sn'], mapped_row['pn'], mapped_row['model'], mapped_row['workstation_name']))
                 simple_count = cursor.fetchone()[0]
-                print(f"📊 Simple comparison matches: {simple_count}")
+                print(f"Simple comparison matches: {simple_count}")
         
         print(f"\n{'='*60}")
         
     except Exception as e:
-        print(f"❌ Error during debugging: {e}")
+        print(f"Error during debugging: {e}")
         import traceback
         traceback.print_exc()
     finally:

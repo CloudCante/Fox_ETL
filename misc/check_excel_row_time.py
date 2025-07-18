@@ -2,9 +2,6 @@ import pandas as pd
 import sys
 import os
 
-# Optionally, import convert_timestamp if available
-# from Fox_ETL.upload_workstation_master_log import convert_timestamp
-
 def convert_timestamp(value):
     import pandas as pd
     if pd.isna(value):
@@ -22,8 +19,6 @@ if not os.path.isfile(EXCEL_PATH):
     sys.exit(1)
 
 df = pd.read_excel(EXCEL_PATH)
-
-# Find the row matching SN and Workstation_Name
 row = df[(df['SN'].astype(str) == SN_TARGET) & (df['Workstation_Name'] == WORKSTATION_TARGET)]
 
 if row.empty:

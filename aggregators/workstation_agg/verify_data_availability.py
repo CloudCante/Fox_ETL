@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import psycopg2
 from datetime import datetime, timedelta
 
@@ -15,7 +14,6 @@ def check_required_fields():
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # Check table structure
             cur.execute("""
                 SELECT column_name, data_type 
                 FROM information_schema.columns 
@@ -24,34 +22,33 @@ def check_required_fields():
             """)
             
             columns = cur.fetchall()
-            print("📋 Available columns in workstation_master_log:")
+            print("Available columns in workstation_master_log:")
             for col_name, data_type in columns:
                 print(f"  {col_name}: {data_type}")
             
-            # Check for required fields
             required_fields = [
-                'sn',                    # Serial number (for unique parts)
-                'workstation_name',      # Station name
-                'model',                 # Tesla SXM4/SXM5
-                'history_station_end_time', # Date for aggregation
-                'history_station_passing_status', # Pass/Fail status
-                'service_flow'           # For filtering NC Sort/RO
+                'sn',                    
+                'workstation_name',      
+                'model',                 
+                'history_station_end_time', 
+                'history_station_passing_status', 
+                'service_flow'           
             ]
             
-            print(f"\n🔍 Checking required fields:")
+            print(f"\nChecking required fields:")
             missing_fields = []
             for field in required_fields:
                 found = any(col[0] == field for col in columns)
-                status = "✅" if found else "❌"
+                status = "True" if found else "False"
                 print(f"  {status} {field}")
                 if not found:
                     missing_fields.append(field)
             
             if missing_fields:
-                print(f"\n❌ Missing required fields: {missing_fields}")
+                print(f"\nMissing required fields: {missing_fields}")
                 return False
             else:
-                print(f"\n✅ All required fields available!")
+                print(f"\nAll required fields available!")
                 return True
                 
     finally:
@@ -62,14 +59,12 @@ def check_data_quality():
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            print(f"\n📊 Data Quality Check:")
+            print(f"\nData Quality Check:")
             
-            # Check total records
             cur.execute("SELECT COUNT(*) FROM workstation_master_log")
             total_records = cur.fetchone()[0]
             print(f"  Total records: {total_records:,}")
             
-            # Check date range
             cur.execute("""
                 SELECT 
                     MIN(history_station_end_time) as earliest_date,
@@ -80,7 +75,6 @@ def check_data_quality():
             date_range = cur.fetchone()
             print(f"  Date range: {date_range[0]} to {date_range[1]}")
             
-            # Check models
             cur.execute("""
                 SELECT model, COUNT(*) 
                 FROM workstation_master_log 
@@ -93,7 +87,6 @@ def check_data_quality():
             for model, count in models:
                 print(f"    {model}: {count:,} records")
             
-            # Check service flows (excluding NC Sort and RO)
             cur.execute("""
                 SELECT service_flow, COUNT(*) 
                 FROM workstation_master_log 
@@ -108,7 +101,6 @@ def check_data_quality():
             for flow, count in service_flows:
                 print(f"    {flow}: {count:,} records")
             
-            # Check stations
             cur.execute("""
                 SELECT workstation_name, COUNT(*) 
                 FROM workstation_master_log 
@@ -123,7 +115,6 @@ def check_data_quality():
             for station, count in stations:
                 print(f"    {station}: {count:,} records")
             
-            # Check pass/fail status
             cur.execute("""
                 SELECT history_station_passing_status, COUNT(*) 
                 FROM workstation_master_log 
@@ -145,14 +136,12 @@ def test_sample_aggregation():
     conn = psycopg2.connect(**DB_CONFIG)
     try:
         with conn.cursor() as cur:
-            # Test aggregation for a recent date
             test_date = datetime.now().date() - timedelta(days=1)
             start_date = test_date
             end_date = test_date + timedelta(days=1)
             
-            print(f"\n🧮 Testing sample aggregation for {test_date}:")
+            print(f"\nTesting sample aggregation for {test_date}:")
             
-            # Test throughput yield calculation
             cur.execute("""
                 SELECT 
                     workstation_name,
@@ -174,35 +163,32 @@ def test_sample_aggregation():
             
             results = cur.fetchall()
             if results:
-                print(f"  ✅ Sample aggregation successful!")
+                print(f"Sample aggregation successful!")
                 print(f"  Found {len(results)} station-model combinations")
                 for station, model, total, passed, failed in results[:5]:
                     throughput_yield = (passed / total * 100) if total > 0 else 0
                     print(f"    {station} ({model}): {passed}/{total} = {throughput_yield:.1f}%")
             else:
-                print(f"  ⚠️  No data found for {test_date}")
+                print(f"No data found for {test_date}")
                 
     finally:
         conn.close()
 
 def main():
-    print("🔍 TPY Data Availability Check")
+    print("TPY Data Availability Check")
     print("=" * 50)
     
-    # Check required fields
     fields_ok = check_required_fields()
     
     if fields_ok:
-        # Check data quality
         check_data_quality()
         
-        # Test sample aggregation
         test_sample_aggregation()
         
-        print(f"\n✅ Data verification complete!")
-        print(f"🎯 Ready to build TPY aggregation system!")
+        print(f"\nData verification complete!")
+        print(f"Ready to build TPY aggregation system!")
     else:
-        print(f"\n❌ Cannot proceed - missing required fields")
+        print(f"\nCannot proceed - missing required fields")
 
 if __name__ == "__main__":
     main() 

@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Import a single testboard Excel file into testboard_master_log.
-Usage: python import_testboard_file.py /path/to/file.xlsx
-"""
 import sys
 import os
 import pandas as pd
@@ -29,7 +24,7 @@ def main():
     if not os.path.isfile(file_path):
         print(f"File not found: {file_path}")
         sys.exit(1)
-    print(f"📥 Importing {file_path} into testboard_master_log...")
+    print(f"Importing {file_path} into testboard_master_log...")
     conn = connect_to_db()
     try:
         df = pd.read_excel(file_path)
@@ -69,13 +64,11 @@ def main():
             mapped_data.append(mapped_row)
         cursor = conn.cursor()
         
-        # Check for existing records to avoid duplicates (excluding 'number_of_times_baseboard_is_used' column)
-        print(f"🔍 Checking for existing records to prevent duplicates...")
+        print(f"Checking for existing records to prevent duplicates...")
         existing_count = 0
         new_records = []
         
         for row in mapped_data:
-            # Create a check query using only the actual testboard columns (no number_of_times_baseboard_is_used column)
             check_query = """
             SELECT COUNT(*) FROM testboard_master_log 
             WHERE sn = %s 
@@ -113,7 +106,7 @@ def main():
             else:
                 new_records.append(row)
         
-        print(f"📊 Found {existing_count:,} existing records, {len(new_records):,} new records to insert")
+        print(f"Found {existing_count:,} existing records, {len(new_records):,} new records to insert")
         
         if new_records:
             insert_query = """
@@ -131,21 +124,20 @@ def main():
             ) for row in new_records]
             execute_values(cursor, insert_query, values)
             conn.commit()
-            print(f"✅ Imported {len(new_records):,} new records from {os.path.basename(file_path)}")
+            print(f"Imported {len(new_records):,} new records from {os.path.basename(file_path)}")
         else:
-            print(f"✅ No new records to import (all {existing_count:,} records already exist)")
+            print(f"No new records to import (all {existing_count:,} records already exist)")
         
         cursor.close()
         
-        # Clean up the XLSX file after successful import
         try:
             os.remove(file_path)
-            print(f"🗑️ Deleted XLSX file: {os.path.basename(file_path)}")
+            print(f"Deleted XLSX file: {os.path.basename(file_path)}")
         except Exception as e:
-            print(f"⚠️ Could not delete XLSX file: {e}")
+            print(f"Could not delete XLSX file: {e}")
             
     except Exception as e:
-        print(f"❌ Error importing {os.path.basename(file_path)}: {e}")
+        print(f"Error importing {os.path.basename(file_path)}: {e}")
         conn.rollback()
     finally:
         conn.close()

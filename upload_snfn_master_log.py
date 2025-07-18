@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-"""
-Upload all snfn Excel files into snfn_master_log with clean schema.
-"""
 import psycopg2
 import pandas as pd
 import glob
@@ -10,7 +6,7 @@ from psycopg2.extras import execute_values
 from datetime import timezone
 
 def connect_to_db():
-    print("🔌 Attempting to connect to database...")
+    print("Attempting to connect to database...")
     return psycopg2.connect(
         host="localhost",
         database="fox_db",
@@ -20,7 +16,7 @@ def connect_to_db():
     )
 
 def create_snfn_table(conn):
-    print("📝 Creating/verifying snfn table...")
+    print("Creating/verifying snfn table...")
     cursor = conn.cursor()
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS snfn_master_log (
@@ -39,7 +35,6 @@ def create_snfn_table(conn):
     );
     """)
     
-    # Add unique constraint separately
     try:
         cursor.execute("""
         ALTER TABLE snfn_master_log 
@@ -47,20 +42,17 @@ def create_snfn_table(conn):
         UNIQUE (workstation_name, fixture_no, error_code, error_disc, sn, pn, history_station_start_time, history_station_end_time);
         """)
     except Exception as e:
-        # Constraint might already exist
         print(f"Note: Unique constraint may already exist: {e}")
     
     conn.commit()
     cursor.close()
 
 def clean_column_name(col_name):
-    """Clean column names for PostgreSQL compatibility"""
     cleaned = col_name.lower().replace(' ', '_').replace('-', '_')
     cleaned = ''.join(c for c in cleaned if c.isalnum() or c == '_')
     return cleaned
 
 def convert_timestamp(value):
-    """Convert pandas Timestamp to Python datetime"""
     if pd.isna(value):
         return None
     if isinstance(value, pd.Timestamp):
@@ -68,44 +60,40 @@ def convert_timestamp(value):
     return pd.to_datetime(value)
 
 def convert_empty_string(value):
-    """Convert empty strings to None for proper comparison"""
     if isinstance(value, str) and value.strip() == '':
         return None
     return value
 
 def main():
-    print("🚀 Starting snfn data upload process...")
+    print("Starting snfn data upload process...")
     
     try:
         conn = connect_to_db()
-        print("✅ Database connection successful")
+        print("Database connection successful")
     except Exception as e:
-        print(f"❌ Database connection failed: {e}")
+        print(f"Database connection failed: {e}")
         return
         
     create_snfn_table(conn)
     
-    # Get the directory of the current script
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    print(f"📂 Script directory: {script_dir}")
+    print(f"Script directory: {script_dir}")
     
-    # Build path to Excel files relative to script location
     excel_path = os.path.join(script_dir, "input", "snfnrecord.xlsx")
-    print(f"🔍 Looking for Excel files in: {excel_path}")
+    print(f"Looking for Excel files in: {excel_path}")
     
-    # Use glob with normalized path
     excel_path_normalized = os.path.normpath(excel_path)
-    print(f"🔍 Normalized path: {excel_path_normalized}")
+    print(f"Normalized path: {excel_path_normalized}")
     
     snfn_files = glob.glob(excel_path_normalized, recursive=True)
-    print(f"📊 Found {len(snfn_files)} Excel files")
+    print(f"Found {len(snfn_files)} Excel files")
     
     if not snfn_files:
-        print("\n❌ No Excel files found! Checking directory existence:")
+        print("\nNo Excel files found! Checking directory existence:")
         check_path = os.path.join(script_dir, "input", "data log", "snfnrecord_xlsx")
         if os.path.exists(check_path):
-            print(f"✅ Directory exists: {check_path}")
-            print("📂 Contents:")
+            print(f"Directory exists: {check_path}")
+            print("Contents:")
             for root, dirs, files in os.walk(check_path):
                 print(f"\nDirectory: {root}")
                 if dirs:
@@ -113,7 +101,7 @@ def main():
                 if files:
                     print("Files:", files)
         else:
-            print(f"❌ Directory does not exist: {check_path}")
+            print(f"Directory does not exist: {check_path}")
         return
         
     total_imported = 0
@@ -122,15 +110,12 @@ def main():
         print(f"\nProcessing file {i}/{len(snfn_files)}: {os.path.basename(file_path)}")
         
         try:
-            # Read Excel file
-            print(f"📖 Reading file: {file_path}")
+            print(f"Reading file: {file_path}")
             df = pd.read_excel(file_path)
-            print(f"✅ Successfully read file with {len(df)} rows")
+            print(f"Successfully read file with {len(df)} rows")
             
-            # Clean column names
             df.columns = [clean_column_name(col) for col in df.columns]
             
-            # Map columns to our clean schema
             mapped_data = []
             for _, row in df.iterrows():
                 mapped_row = {
@@ -146,7 +131,6 @@ def main():
                 }
                 mapped_data.append(mapped_row)
             
-            # Insert into database
             cursor = conn.cursor()
             
             insert_query = """
@@ -157,7 +141,6 @@ def main():
             DO NOTHING
             """
             
-            # Prepare data for bulk insert
             values = [(
                 row['workstation_name'], row['fixture_no'], row['error_code'], row['error_disc'], row['sn'], row['pn'], row['history_station_start_time'], row['history_station_end_time'], row['data_source']
             ) for row in mapped_data]
@@ -168,14 +151,14 @@ def main():
             
             file_imported = len(mapped_data)
             total_imported += file_imported
-            print(f"  ✅ Imported {file_imported:,} records from {os.path.basename(file_path)}")
+            print(f"Imported {file_imported:,} records from {os.path.basename(file_path)}")
             
         except Exception as e:
-            print(f"  ❌ Error importing {os.path.basename(file_path)}: {e}")
+            print(f"Error importing {os.path.basename(file_path)}: {e}")
             conn.rollback()
             continue
     
-    print(f"\n📊 Total snfn records imported: {total_imported:,}")
+    print(f"\nTotal snfn records imported: {total_imported:,}")
     conn.close()
 
 if __name__ == "__main__":

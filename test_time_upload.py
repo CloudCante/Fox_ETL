@@ -1,7 +1,6 @@
 import psycopg2
 from datetime import datetime
 
-# Hardcoded datetime value
 dt_str = "2025-07-07 23:48:01"
 dt_obj = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
 
@@ -17,7 +16,6 @@ conn = psycopg2.connect(
 )
 cur = conn.cursor()
 
-# Create and truncate the test table
 cur.execute("""
 CREATE TABLE IF NOT EXISTS test_time_shift (
     id SERIAL PRIMARY KEY,
@@ -28,12 +26,10 @@ TRUNCATE test_time_shift;
 conn.commit()
 print("Test table created and truncated.")
 
-# Insert the value
 cur.execute("INSERT INTO test_time_shift (test_time) VALUES (%s) RETURNING id;", (dt_obj,))
 conn.commit()
 print("Inserted into database.")
 
-# Fetch the value back
 cur.execute("SELECT test_time FROM test_time_shift ORDER BY id DESC LIMIT 1;")
 db_value = cur.fetchone()[0]
 print("Value fetched from database:", db_value, "| type:", type(db_value), "| tzinfo:", getattr(db_value, 'tzinfo', None))

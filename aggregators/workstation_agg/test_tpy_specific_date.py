@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import psycopg2
 from datetime import datetime, timedelta
 from aggregate_tpy_daily import aggregate_daily_tpy_for_date
@@ -13,20 +12,18 @@ DB_CONFIG = {
 
 def test_specific_date():
     """Test TPY aggregation for a specific date from the data range"""
-    # Use a date with significant data
-    test_date = datetime(2025, 5, 14).date()  # May 14, 2025 - has 9159 records, 405 packing
+    test_date = datetime(2025, 5, 14).date()  
     
-    print(f"🧮 Testing TPY aggregation for {test_date.strftime('%Y-%m-%d')}")
+    print(f"Testing TPY aggregation for {test_date.strftime('%Y-%m-%d')}")
     print("=" * 60)
     
     try:
         result = aggregate_daily_tpy_for_date(test_date)
-        print(f"\n✅ Test completed successfully!")
-        print(f"  📊 Inserted/Updated: {result['insertedCount']} records")
-        print(f"  🎯 Daily FPY: {result['dailyFPY']:.1f}%")
-        print(f"  ✅ Completed today: {result['completedToday']} parts")
+        print(f"\nTest completed successfully!")
+        print(f"Inserted/Updated: {result['insertedCount']} records")
+        print(f"Daily FPY: {result['dailyFPY']:.1f}%")
+        print(f"Completed today: {result['completedToday']} parts")
         
-        # Check the results
         conn = psycopg2.connect(**DB_CONFIG)
         try:
             with conn.cursor() as cur:
@@ -39,7 +36,7 @@ def test_specific_date():
                 """, (test_date,))
                 
                 results = cur.fetchall()
-                print(f"\n📋 Sample results for {test_date}:")
+                print(f"\nSample results for {test_date}:")
                 for model, station, total, passed, yield_pct in results:
                     print(f"  {model} {station}: {passed}/{total} = {yield_pct:.1f}%")
                     
@@ -47,7 +44,7 @@ def test_specific_date():
             conn.close()
             
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
+        print(f"Error: {str(e)}")
         import traceback
         traceback.print_exc()
 
