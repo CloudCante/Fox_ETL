@@ -82,7 +82,7 @@ def main():
         print(f"Database connection failed: {e}")
         return
 
-    create_fixtures_table(conn)
+    create_fixture_table(conn)
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     excel_path = os.path.join(script_dir, "input", "fixtures", "**", "*.xlsx")
