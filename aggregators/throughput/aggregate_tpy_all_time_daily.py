@@ -191,7 +191,6 @@ def aggregate_daily_tpy_for_date(target_date):
                     AND service_flow NOT IN ('NC Sort', 'RO')
                     AND service_flow IS NOT NULL
                     AND workstation_name != 'SORTING'
-                    AND (model IN ('Tesla SXM4', 'Tesla SXM5') OR model = 'SXM6')
                 GROUP BY model, workstation_name
                 HAVING COUNT(*) >= 1
                 ORDER BY model, total_parts DESC;
