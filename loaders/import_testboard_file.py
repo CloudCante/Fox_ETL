@@ -118,7 +118,6 @@ def main():
                 'failure_code': normalize_string(row.get('failure_code')),
                 'diag_version': normalize_string(row.get('diag_version')),
                 'fixture_no': normalize_string(row.get('fixture_no')),
-                'number_of_times_baseboard_is_used': normalize_int(row.get('number_of_times_baseboard_is_used')),
                 'data_source': 'testboard',
             }
             mapped_data.append(mapped_row)
@@ -161,8 +160,7 @@ def main():
         INSERT INTO testboard_master_log (
             sn, pn, model, work_station_process, baseboard_sn, baseboard_pn, workstation_name,
             history_station_start_time, history_station_end_time, history_station_passing_status, operator,
-            failure_reasons, failure_note, failure_code, diag_version, fixture_no,
-            number_of_times_baseboard_is_used, data_source
+            failure_reasons, failure_note, failure_code, diag_version, fixture_no, data_source
         ) VALUES %s
         ON CONFLICT DO NOTHING
         """
@@ -171,7 +169,7 @@ def main():
             row['sn'], row['pn'], row['model'], row['work_station_process'], row['baseboard_sn'], row['baseboard_pn'], row['workstation_name'],
             row['history_station_start_time'], row['history_station_end_time'], row['history_station_passing_status'], row['operator'],
             row['failure_reasons'], row['failure_note'], row['failure_code'], row['diag_version'], row['fixture_no'],
-            row['number_of_times_baseboard_is_used'], row['data_source']
+             row['data_source']
         ) for row in unique_rows]
 
         if values:
