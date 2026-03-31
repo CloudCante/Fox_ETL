@@ -40,10 +40,10 @@ def clean_column_name(col_name):
 
 def normalize_string(value):
     if pd.isna(value):
-        return None
+        return "nan"
     text = str(value).strip()
     if not text or text.lower() == 'nan':
-        return None
+        return "nan"
     return text
 
 
