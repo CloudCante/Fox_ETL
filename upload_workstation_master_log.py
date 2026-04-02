@@ -121,7 +121,7 @@ def main():
             for idx, row in df.iterrows():
                 logging.debug(f"Row {idx}: {row.to_dict()}")
                 mapped_row = {
-                    'sn': convert_empty_string(str(row.get('sn', ''))),
+                    'sn': convert_empty_string(str(row.get('product_sn', ''))),
                     'pn': convert_empty_string(str(row.get('pn', ''))),
                     'model': convert_empty_string(str(row.get('model', ''))),
                     'workstation_name': convert_empty_string(str(row.get('workstation_name', ''))),

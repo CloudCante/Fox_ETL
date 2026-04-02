@@ -87,7 +87,7 @@ def main():
                 history_station_start_time = history_station_end_time
 
             mapped_row = {
-                'sn': normalize_string(row.get('sn')),
+                'sn': normalize_string(row.get('product_sn')),
                 'pn': normalize_string(row.get('pn')),
                 'customer_pn': normalize_string(row.get('customer_pn')),
                 'workstation_name': normalize_string(row.get('workstation_name')),
