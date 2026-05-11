@@ -96,7 +96,8 @@ def aggregate_daily_data(conn):
     ORDER BY 
         DATE(history_station_end_time),
         pn,
-        workstation_name;
+        workstation_name
+    ON CONFLICT (date,pn,workstation_name,service_flow) DO NOTHING;
     """
     
     cursor.execute(query)
