@@ -123,7 +123,7 @@ def main():
             for _, row in df.iterrows():
                 mapped_row = {
                     'sn': convert_empty_string(str(row.get('product_sn', ''))),
-                    'pn': convert_empty_string(str(row.get('pn', ''))),
+                    'pn': convert_empty_string(str(row.get('product_pn', ''))),
                     'model': convert_empty_string(str(row.get('model', ''))),
                     'work_station_process': convert_empty_string(str(row.get('work_station_process', ''))),
                     'baseboard_sn': convert_empty_string(str(row.get('baseboard_sn', ''))),

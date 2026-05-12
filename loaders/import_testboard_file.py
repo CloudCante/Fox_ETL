@@ -103,7 +103,7 @@ def main():
         for _, row in df.iterrows():
             mapped_row = {
                 'sn': normalize_string(row.get('product_sn')),
-                'pn': normalize_string(row.get('pn')),
+                'pn': normalize_string(row.get('product_pn')),
                 'model': normalize_string(row.get('model')),
                 'work_station_process': normalize_string(row.get('work_station_process')),
                 'baseboard_sn': normalize_string(row.get('baseboard_sn')),

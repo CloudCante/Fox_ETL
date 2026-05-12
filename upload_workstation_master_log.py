@@ -122,7 +122,7 @@ def main():
                 logging.debug(f"Row {idx}: {row.to_dict()}")
                 mapped_row = {
                     'sn': convert_empty_string(str(row.get('product_sn', ''))),
-                    'pn': convert_empty_string(str(row.get('pn', ''))),
+                    'pn': convert_empty_string(str(row.get('product_pn', ''))),
                     'model': convert_empty_string(str(row.get('model', ''))),
                     'workstation_name': convert_empty_string(str(row.get('workstation_name', ''))),
                     'history_station_start_time': convert_timestamp(row.get('history_station_start_time')),
