@@ -37,6 +37,7 @@ def create_workstation_table(conn):
         history_station_start_time TIMESTAMP NOT NULL,
         history_station_end_time TIMESTAMP NOT NULL,
         history_station_passing_status VARCHAR(255),
+        station_reason VARCHAR(255),
         operator VARCHAR(255),
         customer_pn VARCHAR(255),
         outbound_version VARCHAR(255),
@@ -56,7 +57,7 @@ def create_workstation_table(conn):
         ADD CONSTRAINT workstation_unique_constraint 
         UNIQUE (sn, pn, customer_pn, outbound_version, workstation_name,
                 history_station_start_time, history_station_end_time, hours,
-                service_flow, model, history_station_passing_status,
+                service_flow, model, history_station_passing_status, station_reason,
                 passing_station_method, operator, first_station_start_time, data_source);
         """)
     except Exception as e:
@@ -128,6 +129,7 @@ def main():
                     'history_station_start_time': convert_timestamp(row.get('history_station_start_time')),
                     'history_station_end_time': convert_timestamp(row.get('history_station_end_time')),
                     'history_station_passing_status': convert_empty_string(str(row.get('history_station_passing_status', ''))),
+                    'station_reason': convert_empty_string(str(row.get('station_reason', ''))),
                     'operator': convert_empty_string(str(row.get('operator', ''))),
                     'customer_pn': convert_empty_string(str(row.get('customer_pn', ''))),
                     'outbound_version': convert_empty_string(str(row.get('outbound_version', ''))),
@@ -144,7 +146,8 @@ def main():
             insert_query = """
             INSERT INTO workstation_master_log (
                 sn, pn, model, workstation_name, history_station_start_time, history_station_end_time,
-                history_station_passing_status, operator, customer_pn, outbound_version, hours,
+                history_station_passing_status, station_reason,
+                operator, customer_pn, outbound_version, hours,
                 service_flow, passing_station_method, first_station_start_time, data_source
             ) VALUES %s
             ON CONFLICT ON CONSTRAINT workstation_unique_constraint
@@ -152,7 +155,8 @@ def main():
             """
             values = [(
                 row['sn'], row['pn'], row['model'], row['workstation_name'], row['history_station_start_time'], row['history_station_end_time'],
-                row['history_station_passing_status'], row['operator'], row['customer_pn'], row['outbound_version'], row['hours'],
+                row['history_station_passing_status'], row['station_reason'],
+                row['operator'], row['customer_pn'], row['outbound_version'], row['hours'],
                 row['service_flow'], row['passing_station_method'], row['first_station_start_time'], row['data_source']
             ) for row in mapped_data]
             logging.info(f"Inserting {len(values)} rows into database...")

@@ -19,6 +19,7 @@ UNIQUE_KEY_FIELDS = (
     'service_flow',
     'model',
     'history_station_passing_status',
+    'station_reason',
     'passing_station_method',
     'operator',
     'first_station_start_time',
@@ -97,6 +98,7 @@ def main():
                 'service_flow': normalize_string(row.get('service_flow')),
                 'model': normalize_string(row.get('model')),
                 'history_station_passing_status': normalize_string(row.get('history_station_passing_status')),
+                'station_reson': normalize_string(row.get('station_reason')),
                 'passing_station_method': normalize_string(row.get('passing_station_method')),
                 'operator': normalize_string(row.get('operator')),
                 'first_station_start_time': normalize_datetime(row.get('first_station_start_time')),
@@ -140,7 +142,8 @@ def main():
         insert_query = """
         INSERT INTO workstation_master_log (
             sn, pn, model, workstation_name,
-            history_station_start_time, history_station_end_time, history_station_passing_status, operator, customer_pn,
+            history_station_start_time, history_station_end_time, history_station_passing_status, station_reason,
+            operator, customer_pn,
             hours, service_flow, passing_station_method, first_station_start_time, data_source
         ) VALUES %s
         ON CONFLICT ON CONSTRAINT workstation_unique_constraint DO NOTHING
@@ -148,7 +151,8 @@ def main():
 
         values = [(
             row['sn'], row['pn'], row['model'], row['workstation_name'],
-            row['history_station_start_time'], row['history_station_end_time'], row['history_station_passing_status'], row['operator'], row['customer_pn'],
+            row['history_station_start_time'], row['history_station_end_time'], row['history_station_passing_status'], row['station_reason'],
+            row['operator'], row['customer_pn'],
             row['hours'], row['service_flow'], row['passing_station_method'], row['first_station_start_time'], row['data_source']
         ) for row in unique_rows]
 
