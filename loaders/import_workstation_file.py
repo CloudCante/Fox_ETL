@@ -98,7 +98,7 @@ def main():
                 'service_flow': normalize_string(row.get('service_flow')),
                 'model': normalize_string(row.get('model')),
                 'history_station_passing_status': normalize_string(row.get('history_station_passing_status')),
-                'station_reson': normalize_string(row.get('station_reason')),
+                'station_reason': normalize_string(row.get('station_reason')),
                 'passing_station_method': normalize_string(row.get('passing_station_method')),
                 'operator': normalize_string(row.get('operator')),
                 'first_station_start_time': normalize_datetime(row.get('first_station_start_time')),
