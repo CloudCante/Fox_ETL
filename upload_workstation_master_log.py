@@ -37,7 +37,7 @@ def create_workstation_table(conn):
         history_station_start_time TIMESTAMP NOT NULL,
         history_station_end_time TIMESTAMP NOT NULL,
         history_station_passing_status VARCHAR(255),
-        station_reason VARCHAR(255),
+        station_reason TEXT,
         operator VARCHAR(255),
         customer_pn VARCHAR(255),
         outbound_version VARCHAR(255),
