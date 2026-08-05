@@ -46,7 +46,11 @@ def setup_driver():
         chrome_options.add_argument("--disable-notifications")
 
         # Persistent Chrome profile
-        chrome_profile = os.path.join(downloads_path, "chrome_profile")
+        # chrome_profile = os.path.join(downloads_path, "chrome_profile")
+        chrome_profile = os.path.expanduser(
+            "~/.local/share/file_extractor/chrome_profile"
+        )
+        os.makedirs(chrome_profile, exist_ok=True)
 
         chrome_options.add_argument(
             f"--user-data-dir={chrome_profile}"
